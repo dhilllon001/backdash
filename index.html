@@ -24,7 +24,7 @@
   --danger:#A32B22;  --danger-bg:#FCEBEC;  --danger-bd:#E8B0AC;
   --info:#1E7E82;    --info-bg:#E6F5F6;    --info-bd:#9BCFCF;
   --violet:#5B4B9E;  --violet-bg:#EEEAF8;  --violet-bd:#C9C0E4;
-  --nav-bg:#F4F6F8;
+  --nav-bg:#0F1A2A;
   --rail-work:#A8C8EA; --rail-job:#1E5FAA; --rail-break:#E0AE3F; --rail-sched:#D8DEEA;
   --shadow-sm:0 1px 2px rgba(15,26,42,.05);
   --shadow-md:0 4px 16px rgba(15,26,42,.08);
@@ -50,42 +50,46 @@ button{cursor:pointer}
 .eyebrow,.nav-label,.kpi-label,.dsec-title,.f-label,.t-lab,.col-l{
   font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
 
-/* ================= SHELL — light Apple / Accessorial ================= */
+/* ================= SHELL — deep navy sidebar ================= */
 .app{display:flex;height:100vh;overflow:hidden}
-.sidebar{width:232px;flex:none;background:var(--nav-bg);color:var(--text);display:flex;flex-direction:column;padding:0;border-right:1px solid var(--border)}
-.brand{display:flex;align-items:center;gap:10px;padding:14px 14px;border-bottom:1px solid var(--border);background:#E8ECF0;min-height:52px}
-.brand-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(145deg,#1E5FAA,#1BA098);display:grid;place-items:center;font-weight:700;color:#fff;font-size:12px;letter-spacing:-.02em;box-shadow:var(--shadow-sm)}
-.brand-name{font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.02em;line-height:1.15}
-.brand-sub{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)}
-.nav-label{color:var(--text-3);padding:14px 16px 6px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:0 8px 2px;border-radius:8px;font-size:13px;font-weight:600;color:var(--text-2);text-decoration:none}
-.nav-item svg{flex:none;opacity:.9;color:var(--text-3)}
-.nav-item:hover{background:rgba(15,26,42,.06);color:var(--text)}
-.nav-item:hover svg{color:var(--text)}
-.nav-item.active{background:var(--accent-tint);color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
-.nav-item.active svg{color:var(--accent);opacity:1}
-.nav-sub{margin:2px 8px 10px 20px;display:flex;flex-direction:column;gap:1px}
-.nav-sub a{font-size:12.5px;font-weight:550;color:var(--text-3);text-decoration:none;padding:7px 10px;border-radius:7px;display:flex;align-items:center;gap:7px}
-.nav-sub a:hover{color:var(--text);background:rgba(15,26,42,.05)}
-.nav-sub a.on{color:var(--accent);background:rgba(30,95,170,.08);font-weight:600}
-.nav-sub .nb{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:700;background:var(--danger);color:#fff;padding:1px 6px;border-radius:999px}
-.sidebar-foot{margin-top:auto;padding:12px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:9px;background:#EEF1F4}
-.avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-tint);display:grid;place-items:center;font-size:10.5px;font-weight:700;color:var(--accent);flex:none;border:1px solid var(--accent-border)}
-.sf-name{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.2}
-.sf-role{font-size:11px;font-weight:500;color:var(--text-3)}
-.sf-phone{font-size:11px;font-weight:600;color:var(--text-2);margin-top:1px}
+.sidebar{width:232px;flex:none;background:#0F1A2A;color:#B4BFCD;display:flex;flex-direction:column;padding:0;border-right:1px solid rgba(255,255,255,.06);transition:width .2s cubic-bezier(.2,.7,.3,1)}
+.sidebar.collapsed{width:64px}
+.brand{display:flex;align-items:center;gap:8px;padding:14px 12px;border-bottom:1px solid rgba(255,255,255,.06);min-height:52px}
+.brand-name{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1.15;white-space:nowrap}
+.sb-toggle{margin-left:auto;width:30px;height:30px;border:none;border-radius:8px;background:transparent;color:#7C8898;display:grid;place-items:center;flex:none}
+.sb-toggle:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-label{color:#7C8898;padding:14px 16px 6px}
+.sidebar.collapsed .brand-name,.sidebar.collapsed .nav-label,.sidebar.collapsed .nav-lbl,.sidebar.collapsed .nb,.sidebar.collapsed .sf-meta{display:none}
+.sidebar.collapsed .nav-item{justify-content:center;padding:10px;margin:0 8px 4px}
+.sidebar.collapsed .sidebar-foot{justify-content:center;padding:12px 8px}
+.sidebar.collapsed .brand{justify-content:center;padding:14px 8px}
+.sidebar.collapsed .sb-toggle{margin:0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:0 8px 2px;border-radius:8px;font-size:13px;font-weight:600;color:#B4BFCD;text-decoration:none;border:none;background:transparent;width:calc(100% - 16px);text-align:left;cursor:pointer}
+.nav-item svg{flex:none;opacity:.9;color:#7C8898}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-item:hover svg{color:#fff}
+.nav-item.active{background:rgba(87,149,227,.16);color:#fff;box-shadow:inset 3px 0 0 #5795E3}
+.nav-item.active svg{color:#8EB8EF;opacity:1}
+.nav-item .nb{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:700;background:#A32B22;color:#fff;padding:1px 6px;border-radius:999px}
+.sidebar-foot{margin-top:auto;padding:12px 14px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:9px}
+.avatar{width:28px;height:28px;border-radius:50%;background:rgba(87,149,227,.2);display:grid;place-items:center;font-size:10.5px;font-weight:700;color:#8EB8EF;flex:none;border:1px solid rgba(87,149,227,.35)}
+.sf-name{font-size:12.5px;font-weight:600;color:#E8EDF3;line-height:1.2}
+.sf-role{font-size:11px;font-weight:500;color:#7C8898}
+.sf-phone{font-size:11px;font-weight:600;color:#B4BFCD;margin-top:1px}
 
 .main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:var(--bg)}
-.topbar{height:52px;flex:none;background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 22px}
-.crumb{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--text-3)}
-.crumb b{color:var(--text);font-weight:700}
-.crumb svg{color:var(--text-4)}
-.view-tabs{display:flex;gap:2px;background:rgba(15,26,42,.06);padding:3px;border-radius:9px}
-.view-tab{border:none;background:transparent;padding:6px 12px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--text-2)}
-.view-tab:hover{color:var(--text)}
-.view-tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow-sm),0 0 0 0.5px rgba(15,26,42,.08)}
+.topbar{height:56px;flex:none;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 20px}
+.top-search{position:relative;flex:1;max-width:420px}
+.top-search input{width:100%;height:36px;padding:0 12px 0 36px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);font-size:13px;font-weight:500;color:var(--text)}
+.top-search input::placeholder{color:var(--text-4)}
+.top-search input:focus{outline:none;border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px var(--accent-soft)}
+.top-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-4);pointer-events:none}
+.loc-select{position:relative;flex:none}
+.loc-select select{appearance:none;-webkit-appearance:none;height:36px;padding:0 32px 0 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface);font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer;min-width:150px}
+.loc-select select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.loc-select::after{content:'';position:absolute;right:12px;top:50%;transform:translateY(-40%);border:5px solid transparent;border-top-color:var(--text-3);pointer-events:none}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:9px}
-.live{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--text-3)}
+.live{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--text-3)}
 .live i{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 3px rgba(27,160,152,.2);animation:pulse 2s infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 5px rgba(18,183,106,.06)}}
 .kbd{font-family:var(--mono);font-size:10px;font-weight:700;border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:5px;padding:1px 5px;color:var(--text-3);background:var(--surface-2)}
@@ -95,7 +99,7 @@ button{cursor:pointer}
 
 /* ================= PRIMITIVES ================= */
 .page-head{display:flex;align-items:flex-end;gap:16px;margin-bottom:14px}
-.page-sub{font-size:12.5px;font-weight:500;color:var(--text-3);margin-top:3px;max-width:760px}
+.page-sub{font-size:13px;font-weight:500;color:var(--text-3);margin-top:4px;max-width:640px}
 .page-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
 .btn{border-radius:9px;font-size:12.5px;font-weight:700;padding:8px 13px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
 .btn:hover{border-color:var(--border-strong);color:var(--text)}
@@ -241,30 +245,30 @@ tr.data:hover .row-act,tr.open-row .row-act{opacity:1}
 .pg.on{background:var(--accent-tint);border-color:var(--accent-border);color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent-border)}
 
 /* ================= SHIFT RAIL (signature) ================= */
-tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom:1px solid var(--border);white-space:normal}
-.detail-wrap{display:grid;grid-template-columns:1.3fr 1fr;gap:0;align-items:start}
-.detail-pane{padding:15px 17px;min-width:0}
+tr.detail-row>td{padding:0;height:auto;background:#F7F8FA;border-bottom:1px solid var(--border);white-space:normal}
+.detail-wrap{display:grid;grid-template-columns:1.35fr 1fr;gap:0;align-items:start}
+.detail-pane{padding:16px 18px;min-width:0}
 .detail-pane+.detail-pane{border-left:1px solid var(--border)}
-.dsec-title{color:var(--text-2);margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.ledger{--c1:106px;--c3:258px;--gap:12px}
+.dsec-title{color:var(--text-2);margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ledger{--c1:118px;--c3:220px;--gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
 .shift-head,.shift-day{display:grid;grid-template-columns:var(--c1) minmax(0,1fr) var(--c3);gap:var(--gap);align-items:center}
-.shift-head{padding-bottom:4px}
-.shift-day{min-height:38px;padding:5px 0;border-bottom:1px solid var(--border-soft)}
+.shift-head{padding-bottom:8px;margin-bottom:4px;border-bottom:1px solid var(--border-soft)}
+.shift-day{min-height:44px;padding:8px 0;border-bottom:1px solid var(--border-soft)}
 .shift-day:last-of-type{border-bottom:none}
-.sd-date .p{font-size:12.5px;font-weight:700;color:var(--text)}
-.sd-date .s{font-size:11px;font-weight:600;color:var(--text-3);display:block}
-.rail-scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--text-3);padding:0 1px}
+.sd-date .p{font-size:13px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.sd-date .s{font-size:11px;font-weight:500;color:var(--text-3);display:block;margin-top:1px}
+.rail-scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text-4);padding:0 1px}
 .rail-scale span:first-child{margin-left:-2px}.rail-scale span:last-child{margin-right:-2px}
-.rail{position:relative;height:24px;min-height:24px;background:var(--surface-3);border-radius:6px;border:1px solid var(--border-soft);overflow:hidden}
+.rail{position:relative;height:28px;min-height:28px;background:#EEF1F5;border-radius:8px;border:1px solid var(--border);overflow:hidden}
 .rail .sched{position:absolute;top:0;bottom:0;background:var(--rail-sched)}
-.rail .seg{position:absolute;top:4px;bottom:4px;border-radius:4px}
+.rail .seg{position:absolute;top:5px;bottom:5px;border-radius:5px}
 .rail .seg.work{background:var(--rail-work)}
 .rail .seg.job{background:var(--rail-job)}
 .rail .seg.brk{background:repeating-linear-gradient(-45deg,var(--rail-break),var(--rail-break) 3px,#F0D08A 3px,#F0D08A 6px)}
 .rail .seg.pause{background:repeating-linear-gradient(-45deg,#9AA3BB,#9AA3BB 3px,#C4CBDA 3px,#C4CBDA 6px)}
 .rail .seg.openp{background:repeating-linear-gradient(-45deg,#E0798D,#E0798D 3px,#F6C3CC 3px,#F6C3CC 6px);border:1px dashed var(--danger)}
 .rail .tick{position:absolute;top:0;bottom:0;width:1px;background:var(--border)}
-.sd-meta{display:flex;align-items:center;gap:6px;justify-content:flex-end;flex-wrap:nowrap;white-space:nowrap;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text-2);line-height:1.3}
+.sd-meta{display:flex;align-items:center;gap:6px;justify-content:flex-end;flex-wrap:nowrap;white-space:nowrap;font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--text-2);line-height:1.3}
 .sd-meta .io{color:var(--text);font-weight:700}
 .sd-meta .arrow{color:var(--text-4)}
 .src{display:inline-flex;align-items:center;height:auto;flex:none;font-size:10px;font-weight:700;border-radius:5px;padding:1px 5px;border:1px solid;font-family:var(--ui);letter-spacing:.02em;white-space:nowrap}
@@ -272,7 +276,7 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
 .src.s-off{background:var(--warning-bg);border-color:var(--warning-bd);color:var(--warning)}
 .src.s-man{background:var(--violet-bg);border-color:var(--violet-bd);color:var(--violet)}
 .src.s-kiosk{background:var(--info-bg);border-color:var(--info-bd);color:var(--info)}
-.rail-legend{display:flex;gap:13px;margin-top:9px;font-size:11px;font-weight:600;color:var(--text-3);flex-wrap:wrap}
+.rail-legend{display:flex;gap:14px;margin-top:12px;font-size:11px;font-weight:600;color:var(--text-3);flex-wrap:wrap}
 .rail-legend span{display:inline-flex;align-items:center;gap:5px}
 .rail-legend i{width:12px;height:8px;border-radius:3px;display:inline-block}
 .rail-legend .lw{background:var(--rail-work)}.rail-legend .lj{background:var(--rail-job)}
@@ -455,22 +459,37 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
 </head>
 <body>
 <div class="app">
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="brand">
-      <div class="brand-mark">BD</div>
-      <div><div class="brand-name">Backdash</div><div class="brand-sub">Decals Ops</div></div>
+      <div class="brand-name">Backdash</div>
+      <button class="sb-toggle" type="button" onclick="toggleSidebar()" title="Collapse sidebar" aria-label="Collapse sidebar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h16"/><path d="M20 9l-3 3 3 3"/></svg>
+      </button>
     </div>
-    <div class="nav-label">Workspace</div>
-    <a class="nav-item active" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Decals</a>
-    <div class="nav-sub">
-      <a href="#" class="on" id="navA" onclick="go('payroll');return false;">Labour &amp; Payroll <span class="nb">4</span></a>
-      <a href="#" id="navB" onclick="go('jobs');return false;">Jobs board <span class="nb">7</span></a>
-      <a href="#" id="navC" onclick="go('units');return false;">By unit</a>
-      <a href="#" id="navD" onclick="go('config');return false;">Configuration</a>
-    </div>
+    <div class="nav-label">Menu</div>
+    <button type="button" class="nav-item active" id="navA" onclick="go('payroll')" title="Labour &amp; Payroll">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      <span class="nav-lbl">Labour &amp; Payroll</span><span class="nb">4</span>
+    </button>
+    <button type="button" class="nav-item" id="navB" onclick="go('jobs')" title="Jobs board">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span class="nav-lbl">Jobs board</span><span class="nb">7</span>
+    </button>
+    <button type="button" class="nav-item" id="navC" onclick="go('assign')" title="Assign work">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m3-3h-6"/></svg>
+      <span class="nav-lbl">Assign work</span>
+    </button>
+    <button type="button" class="nav-item" id="navD" onclick="go('units')" title="By unit">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      <span class="nav-lbl">By unit</span>
+    </button>
+    <button type="button" class="nav-item" id="navE" onclick="go('config')" title="Configuration">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9c.3.6.9 1 1.6 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>
+      <span class="nav-lbl">Configuration</span>
+    </button>
     <div class="sidebar-foot">
       <div class="avatar">AS</div>
-      <div>
+      <div class="sf-meta">
         <div class="sf-name">Arshdeep Singh</div>
         <div class="sf-role">Payroll admin</div>
         <div class="sf-phone phone-num">+1 (905) 555-0142</div>
@@ -480,18 +499,25 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
 
   <div class="main">
     <div class="topbar">
-      <div class="crumb">Backdash <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M9 6l6 6-6 6"/></svg> <b id="crumbNow">Labour &amp; Payroll</b></div>
-      <div class="view-tabs">
-        <button class="view-tab active" id="vtA" onclick="go('payroll')">Labour &amp; Payroll</button>
-        <button class="view-tab" id="vtB" onclick="go('jobs')">Jobs board</button>
-        <button class="view-tab" id="vtC" onclick="go('units')">By unit</button>
-        <button class="view-tab" id="vtD" onclick="go('config')">Configuration</button>
+      <div class="top-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="globalSearch" type="search" placeholder="Search people, jobs, units…" autocomplete="off">
+      </div>
+      <div class="loc-select">
+        <select id="locSelect" aria-label="Location" onchange="filterByLocation(this.value)">
+          <option value="all">All locations</option>
+          <option value="Brampton">Brampton</option>
+          <option value="Laredo">Laredo</option>
+          <option value="Nuevo Laredo">Nuevo Laredo</option>
+        </select>
       </div>
       <div class="topbar-right">
-        <div class="live"><i></i>Live · 12s ago</div>
-        <button class="btn icon-btn" title="Column chooser"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m6-16v16"/></svg></button>
-        <button class="btn icon-btn" title="Density"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-        <button class="btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v13m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Export</button>
+        <div class="live"><i></i>Live</div>
+        <button class="btn btn-primary btn-sm" onclick="openDrawer('dwAssign')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m3-3h-6"/></svg>
+          Assign work
+        </button>
+        <button class="btn btn-sm"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v13m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Export</button>
       </div>
     </div>
 
@@ -502,7 +528,7 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
       <div class="page-head">
         <div>
           <h1 class="h1">Labour &amp; Payroll</h1>
-          <div class="page-sub">Shift punches, job time, and pay codes for the decal crew. Clear every exception, approve the timesheet, then export to payroll.</div>
+          <div class="page-sub">Review punches, clear exceptions, and approve timesheets for export.</div>
         </div>
         <div class="page-actions">
           <span class="lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>Period open</span>
@@ -513,22 +539,14 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
       </div>
 
       <div class="filter-bar">
-        <div class="search">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input type="text" placeholder="Search employee, job #, unit #…"><span class="k kbd">/</span>
-        </div>
         <button class="fchip set">Pay period: <b>Jul 7 – Jul 20, 2026</b><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6"/></svg></button>
-        <button class="fchip">Yard: <b>All yards</b><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6"/></svg></button>
         <button class="fchip">Crew: <b>All (6)</b><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6"/></svg></button>
         <button class="fchip set">Employment: <b>Employee</b><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6"/></svg></button>
-        <button class="fchip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 5h16M7 12h10m-7 7h4"/></svg>Filters</button>
         <div class="spacer"></div>
         <button class="btn btn-ghost btn-sm">Clear all</button>
       </div>
       <div class="applied">
         <span class="achip">Employment: <b>Employee</b><button title="Remove">✕</button></span>
-        <span class="achip">Excludes: <b>Contractors (2)</b><button title="Remove">✕</button></span>
-        <span class="card-sub" style="margin-left:2px">Contractors bill by invoice and are excluded from payroll hours.</span>
       </div>
 
       <div class="kpis">
@@ -543,7 +561,7 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
           <div class="kpi-sub"><span class="delta up">▲ 6.2%</span>vs prior period</div>
         </div>
         <div class="kpi">
-          <div class="kpi-label">Overtime <span class="lt">(ON 44h · TX 40h)</span></div>
+          <div class="kpi-label">Overtime</div>
           <div class="kpi-val"><span class="n">14</span><span class="unit">h 05m</span></div>
           <div class="kpi-sub">2 of 6 over threshold</div>
         </div>
@@ -603,8 +621,6 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
             <th style="width:70px"></th>
           </tr></thead>
           <tbody>
-            <tr class="grp"><td colspan="12">Ontario · CAD <span class="gm">44h/wk OT · ESA eating period · EDT</span></td></tr>
-
             <tr class="data open-row" onclick="rowT('d1',this)">
               <td><span class="caret"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M9 6l6 6-6 6"/></svg></span></td>
               <td><div class="person"><div class="pav" style="background:#E8F1FB;color:#1E5FAA">AV</div><div class="cell-2l"><span class="p">Adarsh Verma</span><span class="s">Installer · EMP-0114</span></div></div></td>
@@ -625,9 +641,9 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
             <tr class="detail-row" id="d1"><td colspan="12">
               <div class="detail-wrap">
                 <div class="detail-pane">
-                  <div class="dsec-title">Shift ledger — last 5 of 9 days
-                    <span class="chip ok xs"><i></i>Identity verified 8/9</span>
-                    <span class="chip dang xs"><i></i>1 geofence mismatch</span>
+                  <div class="dsec-title">Shift timeline
+                    <span class="chip ok xs"><i></i>Verified</span>
+                    <span class="chip dang xs"><i></i>Open punch</span>
                   </div>
                   <div class="ledger">
                   <div class="shift-head">
@@ -863,10 +879,6 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
               <div class="hint">Locked timesheets are immutable. A correction after lock creates an <b>amendment</b> that posts to the next pay period with a retro pay code.</div>
             </div></div></td></tr>
 
-            <tr class="sub"><td colspan="3" class="t-lab">Ontario subtotal · 4 employees</td><td class="num">239:45</td><td class="num">225:40 / 14:05</td><td class="num">180:19</td><td class="num">75%</td><td class="num">19/28</td><td class="num">7,071.48 <span class="ccy">cad</span></td><td colspan="3"></td></tr>
-
-            <tr class="grp"><td colspan="12">Texas · USD <span class="gm">40h/wk FLSA OT · no state meal mandate · CDT</span></td></tr>
-
             <tr class="data" onclick="rowT('d5',this)">
               <td><span class="caret"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M9 6l6 6-6 6"/></svg></span></td>
               <td><div class="person"><div class="pav" style="background:#E6F5F6;color:#1E7E82">JM</div><div class="cell-2l"><span class="p">John Macías</span><span class="s">Installer · EMP-0106</span></div></div></td>
@@ -884,7 +896,6 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
             <tr class="detail-row" id="d5" style="display:none"><td colspan="12"><div class="detail-wrap"><div class="detail-pane" style="grid-column:1/-1">
               <div class="note"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
               <div>Jul 16 punch-in had no selfie match (camera denied). Buddy-punch controls are advisory at the Laredo kiosk — confirm with the yard supervisor or accept with an attestation note.</div></div>
-              <div class="hint"><b>Cross-jurisdiction note:</b> hours worked in Laredo are paid in USD at the Texas rate with FLSA 40h/wk overtime. If a worker crosses yards inside one week, hours are split by yard and each jurisdiction's overtime rule is applied to its own bucket.</div>
             </div></div></td></tr>
 
             <tr class="data" onclick="rowT('d6',this)">
@@ -905,18 +916,17 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
               <div class="hint">Jul 15 shift started at Laredo (CDT) and finished at Nuevo Laredo (CST). Both yards are inside the same shift; the rail shows a yard handoff marker and travel time is coded <span class="tag">TRV</span>. MX-side hours follow NOM-087 rest rules and are reported separately for the MXN payroll file.</div>
             </div></div></td></tr>
 
-            <tr class="sub"><td colspan="3" class="t-lab">Texas subtotal · 2 employees</td><td class="num">118:57</td><td class="num">118:57 / 0:00</td><td class="num">84:07</td><td class="num">71%</td><td class="num">4/5</td><td class="num">2,597.34 <span class="ccy">usd</span></td><td colspan="3"></td></tr>
           </tbody>
           <tfoot><tr>
             <td></td><td class="t-lab">All crew · 6 employees</td><td></td>
             <td class="num">358:42</td><td class="num">344:37 / 14:05</td><td class="num">264:26</td><td class="num">73%</td><td class="num">23/33</td>
-            <td class="num" style="text-align:right">7,071.48 <span class="ccy">cad</span><br>2,597.34 <span class="ccy">usd</span></td>
+            <td class="num">9,668.82</td>
             <td colspan="3"></td>
           </tr></tfoot>
         </table>
         </div>
         <div class="tbl-foot">
-          <span class="rc">6 of 6 employees · totals never mix currencies</span>
+          <span class="rc">6 employees</span>
           <span class="chip neutral xs"><i></i>Rounding: nearest 1 min · grace 5 min</span>
           <div class="pager"><button class="pg">‹</button><button class="pg on">1</button><button class="pg">›</button></div>
         </div>
@@ -926,11 +936,11 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
     <section class="view" id="v-jobs">
       <div class="page-head">
         <div>
-          <h1 class="h1">Jobs Board</h1>
-          <div class="page-sub">Every piece of work is a job: a template, a unit, a checklist, and photo evidence. Assign, unblock, and review evidence here.</div>
+          <h1 class="h1">Jobs board</h1>
+          <div class="page-sub">Track open work, evidence, and blockers across the crew.</div>
         </div>
         <div class="page-actions">
-          <button class="btn">Bulk assign</button>
+          <button class="btn" onclick="openDrawer('dwAssign')">Assign work</button>
           <button class="btn btn-primary">+ New job</button>
         </div>
       </div>
@@ -1038,7 +1048,7 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
               <td><span style="color:var(--text-4)">—</span></td>
               <td><span style="color:var(--text-4)">—</span></td>
               <td><span class="chip dang xs"><i></i>Urgent</span></td>
-              <td><div class="row-act"><button class="ract" title="Assign" onclick="event.stopPropagation()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m3-3h-6"/></svg></button></div></td>
+              <td><div class="row-act"><button class="ract" title="Assign" onclick="event.stopPropagation();openDrawer('dwAssign')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m3-3h-6"/></svg></button></div></td>
             </tr>
             <tr class="data" onclick="openDrawer('dwJob')">
               <td><input type="checkbox" aria-label="Select job" onclick="event.stopPropagation()"></td>
@@ -1125,12 +1135,94 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
         <div class="hint" style="max-width:900px">The empty-data state (a yard with no jobs yet) is deliberately different from the zero-filter state above: it explains the module and offers “Create the first job” instead of “Clear filters”.</div>
       </div>
     </section>
+
+    <!-- ============================================================ ASSIGN WORK -->
+    <section class="view" id="v-assign">
+      <div class="page-head">
+        <div>
+          <h1 class="h1">Assign work</h1>
+          <div class="page-sub">Match open jobs to available crew members.</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="openDrawer('dwAssign')">+ Assign job</button>
+        </div>
+      </div>
+
+      <div class="kpis five">
+        <div class="kpi"><div class="kpi-label">Unassigned</div><div class="kpi-val"><span class="n">3</span></div><div class="kpi-sub">Waiting for crew</div></div>
+        <div class="kpi"><div class="kpi-label">On shift now</div><div class="kpi-val"><span class="n">3</span></div><div class="kpi-sub">Available to assign</div></div>
+        <div class="kpi"><div class="kpi-label">Assigned today</div><div class="kpi-val"><span class="n">8</span></div><div class="kpi-sub">2 still queued</div></div>
+        <div class="kpi"><div class="kpi-label">Avg wait</div><div class="kpi-val"><span class="n">1.4</span><span class="unit">d</span></div><div class="kpi-sub">Oldest 3d 4h</div></div>
+        <div class="kpi"><div class="kpi-label">Urgent</div><div class="kpi-val"><span class="n">2</span></div><div class="kpi-sub">Need assign now</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:14px;align-items:start">
+        <div class="card">
+          <div class="card-head"><div class="h3">Open jobs to assign</div><span class="count-pill">3</span><div class="spacer"></div></div>
+          <table>
+            <thead><tr><th>Job</th><th>Unit</th><th>Location</th><th>Priority</th><th>Age</th><th style="width:110px"></th></tr></thead>
+            <tbody>
+              <tr class="data">
+                <td><div class="cell-2l"><span class="p mono" style="font-size:12.5px">DEC-1061</span><span class="s">Decal install · <span class="tag">DEC-INST</span></span></div></td>
+                <td><span class="mono">TRK-5120</span></td>
+                <td><span class="chip neutral xs">Brampton</span></td>
+                <td><span class="chip dang xs"><i></i>Urgent</span></td>
+                <td class="num">3d 4h</td>
+                <td><button class="btn btn-sm btn-primary" onclick="openDrawer('dwAssign')">Assign</button></td>
+              </tr>
+              <tr class="data">
+                <td><div class="cell-2l"><span class="p mono" style="font-size:12.5px">DEC-1064</span><span class="s">Partial wrap · <span class="tag">DEC-WRAP</span></span></div></td>
+                <td><span class="mono">TRL-90110</span></td>
+                <td><span class="chip neutral xs">Brampton</span></td>
+                <td><span class="chip warn xs"><i></i>High</span></td>
+                <td class="num">1d 2h</td>
+                <td><button class="btn btn-sm btn-primary" onclick="openDrawer('dwAssign')">Assign</button></td>
+              </tr>
+              <tr class="data">
+                <td><div class="cell-2l"><span class="p mono" style="font-size:12.5px">DEC-1066</span><span class="s">IFTA renewal · <span class="tag">DEC-INST</span></span></div></td>
+                <td><span class="mono">TRL-77201</span></td>
+                <td><span class="chip neutral xs">Laredo</span></td>
+                <td><span class="chip neutral xs"><i></i>Normal</span></td>
+                <td class="num">6h</td>
+                <td><button class="btn btn-sm btn-primary" onclick="openDrawer('dwAssign')">Assign</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="h3">Available crew</div><span class="count-pill">3</span></div>
+          <table>
+            <thead><tr><th>Person</th><th>Location</th><th>Load</th><th></th></tr></thead>
+            <tbody>
+              <tr class="data">
+                <td><div class="person"><div class="pav" style="background:#E6F6EC;color:#1F7A43">UP</div><div class="cell-2l"><span class="p">Ujwal Patel</span><span class="s">Installer</span></div></div></td>
+                <td><span class="chip neutral xs">Brampton</span></td>
+                <td><span class="mono">1 job</span></td>
+                <td><button class="btn btn-sm" onclick="openDrawer('dwAssign')">Select</button></td>
+              </tr>
+              <tr class="data">
+                <td><div class="person"><div class="pav" style="background:#E8F1FB;color:#1E5FAA">AV</div><div class="cell-2l"><span class="p">Adarsh Verma</span><span class="s">Installer</span></div></div></td>
+                <td><span class="chip neutral xs">Brampton</span></td>
+                <td><span class="mono">2 jobs</span></td>
+                <td><button class="btn btn-sm" onclick="openDrawer('dwAssign')">Select</button></td>
+              </tr>
+              <tr class="data">
+                <td><div class="person"><div class="pav" style="background:#E6F5F6;color:#1E7E82">JM</div><div class="cell-2l"><span class="p">John Macías</span><span class="s">Installer</span></div></div></td>
+                <td><span class="chip neutral xs">Laredo</span></td>
+                <td><span class="mono">1 job</span></td>
+                <td><button class="btn btn-sm" onclick="openDrawer('dwAssign')">Select</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
     <!-- ============================================================ BY UNIT -->
     <section class="view" id="v-units">
       <div class="page-head">
         <div>
-          <h1 class="h1">Work by Unit</h1>
-          <div class="page-sub">Labour and materials rolled up per tractor or trailer — the cost basis for chargeback, plus regulatory marking status.</div>
+          <h1 class="h1">By unit</h1>
+          <div class="page-sub">Labour and material cost rolled up per tractor or trailer.</div>
         </div>
         <div class="page-actions">
           <button class="btn">Chargeback preview</button>
@@ -1288,7 +1380,7 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
       <div class="page-head">
         <div>
           <h1 class="h1">Configuration</h1>
-          <div class="page-sub">Templates define the mobile workflow and evidence rules. Yards define geofences, shift windows, and the pay rules that drive payroll.</div>
+          <div class="page-sub">Job templates, yards, pay rules, and approvals.</div>
         </div>
         <div class="page-actions">
           <span class="chip violet"><i></i>Changes publish as a new version</span>
@@ -1641,6 +1733,57 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
   </div>
 </aside>
 
+
+<!-- assign work drawer -->
+<aside class="drawer" id="dwAssign" role="dialog" aria-label="Assign work">
+  <div class="dw-head">
+    <div>
+      <div class="h3">Assign work</div>
+      <div class="card-sub" style="margin-top:2px">Pick a job and assign it to a crew member</div>
+    </div>
+    <button class="dw-x" onclick="closeDrawers()" aria-label="Close">✕</button>
+  </div>
+  <div class="dw-body">
+    <div class="dw-sec">
+      <label class="f-label">Job</label>
+      <select class="f-select">
+        <option>DEC-1061 · Decal install · TRK-5120</option>
+        <option>DEC-1064 · Partial wrap · TRL-90110</option>
+        <option>DEC-1066 · IFTA renewal · TRL-77201</option>
+        <option>DEC-1043 · Partial wrap · TRL-88421</option>
+      </select>
+    </div>
+    <div class="dw-sec">
+      <label class="f-label">Assign to</label>
+      <select class="f-select">
+        <option>Ujwal Patel · Brampton · 1 active job</option>
+        <option>Adarsh Verma · Brampton · 2 active jobs</option>
+        <option>Kamal Dhillon · Brampton · available</option>
+        <option>John Macías · Laredo · 1 active job</option>
+      </select>
+    </div>
+    <div class="f-row">
+      <div><label class="f-label">Priority</label>
+        <select class="f-select"><option>Urgent</option><option selected>High</option><option>Normal</option><option>Low</option></select>
+      </div>
+      <div><label class="f-label">Due</label>
+        <input class="f-input mono" value="2026-07-22 17:00">
+      </div>
+    </div>
+    <div class="f-row wide">
+      <div><label class="f-label">Note (optional)</label>
+        <textarea class="f-input" rows="2" placeholder="Any instructions for the installer…"></textarea>
+      </div>
+    </div>
+    <div class="cb on"><i>✓</i>Notify worker in the app</div>
+    <div class="cb on"><i>✓</i>Start immediately if worker is on shift</div>
+  </div>
+  <div class="dw-foot">
+    <button class="btn btn-sm" onclick="closeDrawers()">Cancel</button>
+    <div class="spacer"></div>
+    <button class="btn btn-sm btn-primary" onclick="closeDrawers()">Assign job</button>
+  </div>
+</aside>
 <!-- job review drawer -->
 <aside class="drawer" id="dwJob" role="dialog" aria-label="Job detail">
   <div class="dw-head">
@@ -1705,16 +1848,34 @@ tr.detail-row>td{padding:0;height:auto;background:var(--surface-2);border-bottom
 </aside>
 
 <script>
-const VIEWS={payroll:['vtA','navA','Labour &amp; Payroll'],jobs:['vtB','navB','Jobs board'],units:['vtC','navC','By unit'],config:['vtD','navD','Configuration']};
+const VIEWS={payroll:'navA',jobs:'navB',assign:'navC',units:'navD',config:'navE'};
 function go(v){
   document.querySelectorAll('.view').forEach(s=>s.classList.remove('active'));
-  document.getElementById('v-'+v).classList.add('active');
-  document.querySelectorAll('.view-tab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.nav-sub a').forEach(a=>a.classList.remove('on'));
-  document.getElementById(VIEWS[v][0]).classList.add('active');
-  document.getElementById(VIEWS[v][1]).classList.add('on');
-  document.getElementById('crumbNow').innerHTML=VIEWS[v][2];
+  const el=document.getElementById('v-'+v);
+  if(!el) return;
+  el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(a=>a.classList.remove('active'));
+  const nav=document.getElementById(VIEWS[v]);
+  if(nav) nav.classList.add('active');
   document.querySelector('.content').scrollTop=0;
+}
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  sb.classList.toggle('collapsed');
+  const btn=sb.querySelector('.sb-toggle');
+  btn.title=sb.classList.contains('collapsed')?'Expand sidebar':'Collapse sidebar';
+}
+function filterByLocation(loc){
+  document.querySelectorAll('.view.active tr.data').forEach(tr=>{
+    if(loc==='all'){tr.style.display='';return;}
+    const text=tr.textContent||'';
+    tr.style.display=text.includes(loc)?'':'none';
+    const id=tr.getAttribute('onclick');
+    if(id&&id.includes("rowT('")){
+      const m=id.match(/rowT\('([^']+)'/);
+      if(m){const d=document.getElementById(m[1]); if(d) d.style.display='none'; tr.classList.remove('open-row');}
+    }
+  });
 }
 function rowT(id,tr){
   const d=document.getElementById(id);
@@ -1740,7 +1901,7 @@ function closeDrawers(){
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape')closeDrawers();
   if(e.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){
-    e.preventDefault();const s=document.querySelector('.view.active .search input');if(s)s.focus();}
+    e.preventDefault();const s=document.getElementById('globalSearch');if(s)s.focus();}
 });
 document.querySelectorAll('.tpl-item').forEach(el=>el.addEventListener('click',()=>{
   document.querySelectorAll('.tpl-item').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');}));
