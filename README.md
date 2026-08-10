@@ -1,15 +1,19 @@
 # Backdash
 
-Decals operations dashboard — labour & payroll, jobs board, unit costing, and configuration.
+Decals operations dashboard — labour & payroll, jobs board, assign work, unit costing, and configuration.
 
-Design tokens match **Accessorial Management** and **Sales Rep Reporting** (Pearl / ChargerFleet): Inter type, `#E0E4EA` app chrome, `#1E5FAA` action blue, `#1BA098` teal accent.
+Built with **React + Vite**. Design tokens match Accessorial Management and Sales Rep Reporting.
 
-## Preview
-
-Open `index.html` in a browser, or:
+## Develop
 
 ```bash
-python3 -m http.server 5179
+npm install
+npm run dev
 ```
 
-Then visit http://localhost:5179
+## Build
+
+```bash
+npm run build
+npm run preview
+```
