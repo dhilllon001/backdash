@@ -272,18 +272,6 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
     <section className="pd dash3">
       <div className="pd-shell">
         <aside className="pd-list">
-          <div className="pd-list-profile">
-            <div className="pav" style={{ background: emp.bg, color: emp.color }}>
-              {emp.initials}
-            </div>
-            <div className="pd-list-profile-text">
-              <b>{emp.name}</b>
-              <span>
-                {emp.role} · {emp.id?.toUpperCase?.() || emp.id}
-              </span>
-            </div>
-          </div>
-
           <div className="pd-list-stats">
             <div>
               <span>Hours</span>
@@ -462,21 +450,10 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                   </div>
 
                   {!s.dayOff ? (
-                    <div className="pd-shift-barrow">
+                    <div className="pd-shift-barrow plain">
                       <span className="pd-shift-range num">
                         {formatClock(s.in)} → {s.open ? 'open' : formatClock(s.out)}
                       </span>
-                      <div className="pd-mini-rail">
-                        {(s.segs || [])
-                          .filter((seg) => seg.type !== 'sched')
-                          .map((seg, i) => (
-                            <i
-                              key={i}
-                              className={seg.type}
-                              style={{ left: seg.left, width: seg.width }}
-                            />
-                          ))}
-                      </div>
                       <span className="pd-shift-dur num">
                         {s.open ? s.productiveHours || s.onJobs : s.totalHours || s.hoursLabel}
                       </span>

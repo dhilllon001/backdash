@@ -217,7 +217,9 @@ export default function App() {
           onOpenExceptions={openExceptionsPanel}
           onCreateJob={openCreateJob}
           onBack={() => navigate('payroll')}
+          personName={emp?.name}
           personLabel={emp?.role?.match(/EMP-\d+/)?.[0] || emp?.id}
+          personMeta="Pay period Jul 7 – 20"
           canApprove={!!emp?.canApprove}
           needsPunch={needsPunch}
           onResolvePunch={() => openPunch(emp?.id)}

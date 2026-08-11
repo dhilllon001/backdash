@@ -83,6 +83,8 @@ export function Topbar({
   onCreateJob,
   onBack,
   personLabel,
+  personName,
+  personMeta,
   canApprove,
   needsPunch,
   onApprove,
@@ -99,13 +101,16 @@ export function Topbar({
               <ArrowLeft size={14} strokeWidth={2.2} />
               Dashboard
             </button>
-            {personLabel ? (
-              <div className="topbar-person-meta">
-                <span className="mono">{personLabel}</span>
-                <span className="pd-dot" />
-                <span>Pay period Jul 7 – 20</span>
-              </div>
-            ) : null}
+            <div className="topbar-person-meta">
+              {personName ? <strong className="topbar-person-name">{personName}</strong> : null}
+              {personLabel || personMeta ? (
+                <span className="topbar-person-sub">
+                  {personLabel ? <span className="mono">{personLabel}</span> : null}
+                  {personLabel && personMeta ? <span className="pd-dot" /> : null}
+                  {personMeta ? <span>{personMeta}</span> : null}
+                </span>
+              ) : null}
+            </div>
           </div>
 
           <div className="topbar-right">
