@@ -4,7 +4,7 @@ import { Topbar } from './components/Topbar.jsx'
 import { AssignDrawer } from './components/Drawers.jsx'
 import { CreateJobDrawer } from './components/CreateJobDrawer.jsx'
 import { ExceptionsPanel } from './components/ExceptionsPanel.jsx'
-import { ApproveTimesheetModal, PunchResolveModal } from './components/WorkflowModals.jsx'
+import { ApproveTimesheetModal, PunchResolveModal, ProofTimesheetModal } from './components/WorkflowModals.jsx'
 import { PayrollView } from './views/PayrollView.jsx'
 import { PersonDetailView } from './views/PersonDetailView.jsx'
 import { JobsView } from './views/JobsView.jsx'
@@ -26,6 +26,8 @@ export default function App() {
   const [employees, setEmployees] = useState(EMPLOYEES)
   const [assignOpen, setAssignOpen] = useState(false)
   const [createJobOpen, setCreateJobOpen] = useState(false)
+  const [createJobPerson, setCreateJobPerson] = useState(null)
+  const [proofOpen, setProofOpen] = useState(false)
   const [excOpen, setExcOpen] = useState(false)
   const [workflow, setWorkflow] = useState(null) // { type: 'punch'|'approve', employeeId }
 
@@ -34,6 +36,8 @@ export default function App() {
       if (e.key === 'Escape') {
         setAssignOpen(false)
         setCreateJobOpen(false)
+        setCreateJobPerson(null)
+        setProofOpen(false)
         setExcOpen(false)
         setWorkflow(null)
       }
@@ -68,11 +72,34 @@ export default function App() {
     setAssignOpen(true)
   }
 
-  const openCreateJob = () => {
+  const openCreateJob = (person = null) => {
     setAssignOpen(false)
     setWorkflow(null)
     setExcOpen(false)
+    setProofOpen(false)
+    setCreateJobPerson(person)
     setCreateJobOpen(true)
+  }
+
+  const openProofTimesheet = () => {
+    if (!emp) return
+    setAssignOpen(false)
+    setCreateJobOpen(false)
+    setCreateJobPerson(null)
+    setWorkflow(null)
+    setExcOpen(false)
+    setProofOpen(true)
+  }
+
+  const sharePersonTimesheet = async () => {
+    if (!emp) return
+    setProofOpen(true)
+    logActivity({
+      area: 'payroll',
+      action: 'share_timesheet',
+      title: 'Shared proof of timesheet',
+      detail: `${emp.name} · Pay period Jul 7 – 20`,
+    })
   }
 
   const openExceptionsPanel = () => {
@@ -215,7 +242,9 @@ export default function App() {
           onSearchChange={setSearch}
           exceptionCount={blockingCount}
           onOpenExceptions={openExceptionsPanel}
-          onCreateJob={openCreateJob}
+          onCreateJob={view === 'person' ? () => openCreateJob(emp) : () => openCreateJob(null)}
+          onProofTimesheet={openProofTimesheet}
+          onShare={sharePersonTimesheet}
           onBack={() => navigate('payroll')}
           personName={emp?.name}
           personLabel={emp?.role?.match(/EMP-\d+/)?.[0] || emp?.id}
@@ -259,15 +288,36 @@ export default function App() {
       {createJobOpen ? (
         <CreateJobDrawer
           open
-          onClose={() => setCreateJobOpen(false)}
+          defaultPerson={createJobPerson}
+          onClose={() => {
+            setCreateJobOpen(false)
+            setCreateJobPerson(null)
+          }}
           onCreated={(job) => {
             logActivity({
               area: 'jobs',
               action: 'create_job',
-              title: 'Created job',
+              title: createJobPerson
+                ? `Created job for ${createJobPerson.name}`
+                : 'Created job',
               detail: `${job?.id || 'New job'}${job?.title ? ` · ${job.title}` : ''}${
                 job?.unit ? ` · ${job.unit}` : ''
-              }`,
+              }${createJobPerson ? ` · ${createJobPerson.name}` : ''}`,
+            })
+          }}
+        />
+      ) : null}
+
+      {proofOpen && emp ? (
+        <ProofTimesheetModal
+          employee={emp}
+          onClose={() => setProofOpen(false)}
+          onShare={() => {
+            logActivity({
+              area: 'payroll',
+              action: 'share_timesheet',
+              title: 'Shared proof of timesheet',
+              detail: `${emp.name} · Pay period Jul 7 – 20`,
             })
           }}
         />

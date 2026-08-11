@@ -40,26 +40,53 @@ function nextJobId() {
   return `DEC-${1068 + Math.floor(Math.random() * 20)}`
 }
 
-export function CreateJobDrawer({ open, onClose, onCreated }) {
+export function CreateJobDrawer({ open, onClose, onCreated, defaultPerson = null }) {
   const [step, setStep] = useState(0)
   const [form, setForm] = useState(EMPTY)
   const [jobId, setJobId] = useState(() => nextJobId())
   const [created, setCreated] = useState(false)
 
+  const personAssignee = defaultPerson?.initials || ''
+  const lockedPerson = !!defaultPerson
+
+  const crewOptions = useMemo(() => {
+    const base = [...CREW_AVAILABLE]
+    if (
+      defaultPerson &&
+      !base.some((c) => c.initials === defaultPerson.initials)
+    ) {
+      base.unshift({
+        initials: defaultPerson.initials,
+        name: defaultPerson.name,
+        role: defaultPerson.role?.split('·')[0]?.trim() || 'Installer',
+        yard: defaultPerson.yards?.[0] || 'Brampton',
+        load: 'This person',
+        color: defaultPerson.color,
+        bg: defaultPerson.bg,
+      })
+    }
+    return base
+  }, [defaultPerson])
+
   useEffect(() => {
     if (!open) return
     setStep(0)
-    setForm(EMPTY)
+    setForm({
+      ...EMPTY,
+      assignee: defaultPerson?.initials || '',
+      yard: defaultPerson?.yards?.[0] || EMPTY.yard,
+      notify: true,
+    })
     setJobId(nextJobId())
     setCreated(false)
-  }, [open])
+  }, [open, defaultPerson])
 
   const set = (key, value) => setForm((f) => ({ ...f, [key]: value }))
 
   const typeMeta = JOB_TYPES.find((t) => t.id === form.type)
   const unitMeta = UNITS.find((u) => u.id === form.unit)
   const assigneeMeta =
-    CREW_AVAILABLE.find((c) => c.initials === form.assignee) ||
+    crewOptions.find((c) => c.initials === form.assignee) ||
     EMPLOYEES.find((e) => e.initials === form.assignee)
 
   const canNext = useMemo(() => {
@@ -107,13 +134,29 @@ export function CreateJobDrawer({ open, onClose, onCreated }) {
         <div>
           <div className="h3">Create job</div>
           <div style={{ marginTop: 2, fontSize: 12, fontWeight: 500, color: 'var(--text-3)' }}>
-            {created ? 'Job created' : `${STEPS[step].label} · ${jobId}`}
+            {created
+              ? 'Job created'
+              : lockedPerson
+                ? `For ${defaultPerson.name} · ${STEPS[step].label} · ${jobId}`
+                : `${STEPS[step].label} · ${jobId}`}
           </div>
         </div>
         <button className="dw-x" type="button" onClick={onClose} aria-label="Close">
           <X size={14} />
         </button>
       </div>
+
+      {lockedPerson && !created ? (
+        <div className="cj-person-lock">
+          <div className="pav" style={{ background: defaultPerson.bg, color: defaultPerson.color }}>
+            {defaultPerson.initials}
+          </div>
+          <div>
+            <b>Assigned to {defaultPerson.name}</b>
+            <span>{defaultPerson.role}</span>
+          </div>
+        </div>
+      ) : null}
 
       {!created ? (
         <div className="cj-steps">
@@ -310,27 +353,37 @@ export function CreateJobDrawer({ open, onClose, onCreated }) {
         {!created && step === 2 ? (
           <>
             <div className="dw-sec">
-              <label className="f-label">Assign to (optional)</label>
+              <label className="f-label">
+                {lockedPerson ? 'Assignee' : 'Assign to (optional)'}
+              </label>
               <div className="cj-crew">
-                <button
-                  type="button"
-                  className={`cj-crew-item${form.assignee === '' ? ' on' : ''}`}
-                  onClick={() => set('assignee', '')}
-                >
-                  <div className="pav" style={{ background: '#EFF2F8', color: '#49516A' }}>
-                    —
-                  </div>
-                  <div>
-                    <b>Leave unassigned</b>
-                    <span>Add to open board</span>
-                  </div>
-                </button>
-                {CREW_AVAILABLE.map((c) => (
+                {!lockedPerson ? (
+                  <button
+                    type="button"
+                    className={`cj-crew-item${form.assignee === '' ? ' on' : ''}`}
+                    onClick={() => set('assignee', '')}
+                  >
+                    <div className="pav" style={{ background: '#EFF2F8', color: '#49516A' }}>
+                      —
+                    </div>
+                    <div>
+                      <b>Leave unassigned</b>
+                      <span>Add to open board</span>
+                    </div>
+                  </button>
+                ) : null}
+                {crewOptions.map((c) => (
                   <button
                     key={c.initials}
                     type="button"
-                    className={`cj-crew-item${form.assignee === c.initials ? ' on' : ''}`}
-                    onClick={() => set('assignee', c.initials)}
+                    className={`cj-crew-item${form.assignee === c.initials ? ' on' : ''}${
+                      lockedPerson && c.initials === personAssignee ? ' locked' : ''
+                    }`}
+                    onClick={() => {
+                      if (lockedPerson && c.initials !== personAssignee) return
+                      set('assignee', c.initials)
+                    }}
+                    disabled={lockedPerson && c.initials !== personAssignee}
                   >
                     <div className="pav" style={{ background: c.bg, color: c.color }}>
                       {c.initials}
