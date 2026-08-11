@@ -101,7 +101,7 @@ function EmpRow({ emp, onOpenPerson, onApprove, onResolvePunch }) {
           ) : (
             <button
               type="button"
-              className={`btn btn-sm${emp.canApprove ? ' btn-primary' : ''}`}
+              className={`btn btn-sm${emp.canApprove && !approved ? ' btn-approve' : ''}`}
               disabled={!emp.canApprove || approved}
               onClick={(e) => {
                 e.stopPropagation()
@@ -129,7 +129,7 @@ const PERIODS = [
 const STATUS_OPTS = [
   { id: 'all', label: 'All statuses' },
   { id: 'blocked', label: 'Blocked' },
-  { id: 'ready', label: 'Ready to approve' },
+  { id: 'ready', label: 'Waiting for approval' },
   { id: 'approved', label: 'Approved' },
   { id: 'pending', label: 'Pending' },
   { id: 'overtime', label: 'Has OT' },
@@ -139,7 +139,7 @@ const KPI_META = [
   { id: 'on_shift', label: 'On shift now' },
   { id: 'overtime', label: 'Overtime' },
   { id: 'blocked', label: 'Blocked' },
-  { id: 'ready', label: 'Ready' },
+  { id: 'ready', label: 'Waiting for approval' },
   { id: 'approved', label: 'Approved' },
 ]
 

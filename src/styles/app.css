@@ -8697,3 +8697,18 @@ tr.sub .t-lab { color: var(--text-2); }
   .home-top { padding: 14px 16px; }
   .home-main { padding: 24px 16px 40px; }
 }
+
+/* Decals dashboard approve — green */
+.btn-approve {
+  background: #0B7A55 !important;
+  border-color: #0B7A55 !important;
+  color: #fff !important;
+}
+.btn-approve:hover:not(:disabled) {
+  background: #096648 !important;
+  border-color: #096648 !important;
+  color: #fff !important;
+}
+.btn-approve:disabled {
+  opacity: 0.55;
+}

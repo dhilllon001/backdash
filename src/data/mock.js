@@ -232,7 +232,7 @@ export const EMPLOYEES = [
     jobHrs: '66:02',
     util: 78,
     jobs: '7/11',
-    status: { tone: 'info', label: 'Ready' },
+    status: { tone: 'info', label: 'Waiting for approval' },
     canApprove: true,
   },
   {
@@ -251,7 +251,7 @@ export const EMPLOYEES = [
     jobHrs: '72:40',
     util: 82,
     jobs: '9/12',
-    status: { tone: 'info', label: 'Ready' },
+    status: { tone: 'info', label: 'Waiting for approval' },
     canApprove: true,
   },
   {
@@ -309,7 +309,7 @@ export const EMPLOYEES = [
     jobHrs: '64:15',
     util: 80,
     jobs: '8/9',
-    status: { tone: 'info', label: 'Ready' },
+    status: { tone: 'info', label: 'Waiting for approval' },
     canApprove: true,
   },
   {
@@ -348,7 +348,7 @@ export const EMPLOYEES = [
     jobHrs: '67:40',
     util: 82,
     jobs: '8/10',
-    status: { tone: 'info', label: 'Ready' },
+    status: { tone: 'info', label: 'Waiting for approval' },
     canApprove: true,
   },
 ]

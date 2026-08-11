@@ -192,7 +192,7 @@ export default function App() {
         e.id === workflowEmp.id
           ? {
               ...e,
-              status: { tone: 'info', label: 'Ready' },
+              status: { tone: 'info', label: 'Waiting for approval' },
               canApprove: true,
             }
           : e,
