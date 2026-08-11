@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { MapPin, Clock3 } from 'lucide-react'
 import { Chip, formatClock } from '../../components/ui.jsx'
-import { getSecurityPerson, getPersonShifts } from '../../data/security.js'
+import { getSecurityPerson, getSecurityShifts } from '../../data/security.js'
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
@@ -12,7 +12,7 @@ const TABS = [
 
 export function SecurityPersonDetail({ personId, employee, onResolvePunch }) {
   const emp = employee || getSecurityPerson(personId) || getSecurityPerson('s1')
-  const shifts = useMemo(() => getPersonShifts(emp.id), [emp.id])
+  const shifts = useMemo(() => getSecurityShifts(emp.id), [emp.id])
   const [tab, setTab] = useState('overview')
   const shift = shifts[0]
 

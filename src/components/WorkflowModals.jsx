@@ -305,14 +305,15 @@ export function ApproveTimesheetModal({ employee, onClose, onSave }) {
 }
 
 /** Proof of timesheet — printable / shareable summary for a person */
-export function ProofTimesheetModal({ employee, onClose, onShare }) {
+export function ProofTimesheetModal({ employee, onClose, onShare, loadShifts }) {
   const [copied, setCopied] = useState(false)
   const [shared, setShared] = useState(false)
 
   const ledger = useMemo(() => {
     if (!employee) return []
-    return buildShiftLedger(getPersonShifts(employee.id), '2026-07-07', '2026-07-20')
-  }, [employee])
+    const shifts = loadShifts ? loadShifts(employee.id) : getPersonShifts(employee.id)
+    return buildShiftLedger(shifts, '2026-07-07', '2026-07-20')
+  }, [employee, loadShifts])
 
   const worked = ledger.filter((s) => !s.dayOff)
   const openCount = worked.filter((s) => s.open).length

@@ -160,9 +160,9 @@ function EditPunchForm({ punchIn, punchOut, onSave, onCancel }) {
   )
 }
 
-export function PersonDetailView({ personId, employee, onResolvePunch }) {
+export function PersonDetailView({ personId, employee, onResolvePunch, loadShifts }) {
   const emp = employee || getEmployee(personId) || getEmployee('d1')
-  const baseShifts = getPersonShifts(emp.id)
+  const baseShifts = loadShifts ? loadShifts(emp.id) : getPersonShifts(emp.id)
 
   const [rangeStart, setRangeStart] = useState('2026-07-07')
   const [rangeEnd, setRangeEnd] = useState('2026-07-20')

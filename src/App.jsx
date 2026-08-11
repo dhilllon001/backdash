@@ -15,14 +15,13 @@ import { ActivityLogView } from './views/ActivityLogView.jsx'
 import { HomeView } from './views/HomeView.jsx'
 import { WorkspaceDashboard } from './views/WorkspaceDashboard.jsx'
 import { SecurityDashboard } from './views/security/SecurityDashboard.jsx'
-import { SecurityPersonDetail } from './views/security/SecurityPersonDetail.jsx'
 import { VisitorsView } from './views/security/VisitorsView.jsx'
 import { SecurityConfigView } from './views/security/SecurityConfigView.jsx'
 import { SecurityAssignmentsView } from './views/security/SecurityAssignmentsView.jsx'
 import { SecurityReportingView } from './views/security/SecurityReportingView.jsx'
 import { useActivity } from './context/ActivityContext.jsx'
 import { EMPLOYEES, EXCEPTIONS } from './data/mock.js'
-import { SECURITY_PEOPLE, getSecurityPerson } from './data/security.js'
+import { SECURITY_PEOPLE, getSecurityPerson, getSecurityShifts } from './data/security.js'
 import { getWorkspace } from './data/workspaces.js'
 
 export default function App() {
@@ -338,10 +337,11 @@ export default function App() {
             />
           )}
           {view === 'person' && isSecurity && (
-            <SecurityPersonDetail
+            <PersonDetailView
               personId={personId}
               employee={emp}
               onResolvePunch={() => openPunch(personId)}
+              loadShifts={getSecurityShifts}
             />
           )}
           {view === 'jobs' && isDecals && <JobsView />}
@@ -389,6 +389,7 @@ export default function App() {
       {proofOpen && emp ? (
         <ProofTimesheetModal
           employee={emp}
+          loadShifts={isSecurity ? getSecurityShifts : undefined}
           onClose={() => setProofOpen(false)}
           onShare={() => {
             logActivity({
