@@ -6,8 +6,8 @@ import {
   Clock3,
   Pencil,
   CalendarRange,
-  MoreVertical,
-  Filter,
+  Camera,
+  Search,
 } from 'lucide-react'
 import { Chip, formatClock } from '../components/ui.jsx'
 import { LocationMap } from '../components/LocationMap.jsx'
@@ -22,7 +22,9 @@ function collectPhotos(jobs = []) {
         src: typeof p === 'string' ? p : p.src,
         label: (typeof p === 'object' && p.label) || `Photo ${i + 1}`,
         jobId: job.id,
+        title: job.title,
         unit: job.unit,
+        status: job.status,
         ago: ['12m ago', '48m ago', '1h ago', '2h ago', '3h ago'][items.length % 5],
       })
     })
@@ -36,6 +38,84 @@ function jobsDoneCount(shifts) {
 
 function totalJobs(shifts) {
   return shifts.reduce((n, s) => n + (s.jobs?.length || 0), 0)
+}
+
+function toMin(t) {
+  if (!t || t === '—') return null
+  const [h, m] = String(t).split(':').map(Number)
+  if (Number.isNaN(h) || Number.isNaN(m)) return null
+  return h * 60 + m
+}
+
+function buildActivity(shift) {
+  if (!shift || shift.dayOff) return []
+  const events = []
+  if (shift.in) {
+    events.push({
+      id: 'in',
+      time: shift.in,
+      tone: 'ok',
+      title: 'Clocked in',
+      detail: `Badge scan · ${shift.yard} yard`,
+    })
+  }
+  ;(shift.jobs || []).forEach((j, idx) => {
+    if (j.start) {
+      events.push({
+        id: `${j.id}-start`,
+        time: j.start,
+        tone: 'ok',
+        title: `started ${j.title}`,
+        detail: `${j.id} · ${j.unit}`,
+      })
+    }
+    if (j.end) {
+      events.push({
+        id: `${j.id}-end`,
+        time: j.end,
+        tone: 'ok',
+        title: `finished ${j.title}`,
+        detail: `${j.actual || '—'} · ${j.status?.label || 'Done'}`,
+      })
+    } else if (j.start && idx === 0) {
+      events.push({
+        id: `${j.id}-pause`,
+        time: j.start,
+        tone: 'warn',
+        title: `paused Waiting on materials`,
+        detail: `${j.id} · still open`,
+        soft: true,
+      })
+    }
+  })
+  if (shift.breakMin) {
+    events.push({
+      id: 'brk',
+      time: '12:05',
+      tone: 'muted',
+      title: 'Break',
+      detail: `${shift.breakMin} min unpaid meal`,
+    })
+  }
+  if (shift.open) {
+    events.push({
+      id: 'missing',
+      time: shift.exception?.time || '15:56',
+      tone: 'warn',
+      title: 'Punch-out missing',
+      detail: shift.exception?.text || 'No punch-out recorded',
+      alert: true,
+    })
+  } else if (shift.out) {
+    events.push({
+      id: 'out',
+      time: shift.out,
+      tone: 'ok',
+      title: 'Clocked out',
+      detail: `${shift.totalHours || shift.hoursLabel} paid · ${shift.productiveHours || shift.onJobs} productive`,
+    })
+  }
+  return events.sort((a, b) => (toMin(a.time) ?? 0) - (toMin(b.time) ?? 0))
 }
 
 function EditPunchForm({ punchIn, punchOut, onSave, onCancel }) {
@@ -86,8 +166,9 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
   const [rangeStart, setRangeStart] = useState('2026-07-07')
   const [rangeEnd, setRangeEnd] = useState('2026-07-20')
   const [showRange, setShowRange] = useState(false)
-  const [listTab, setListTab] = useState('all') // all | worked | off
-  const [listPill, setListPill] = useState('all') // all | open | closed | ot | off
+  const [listTab, setListTab] = useState('all')
+  const [listPill, setListPill] = useState('all')
+  const [listQuery, setListQuery] = useState('')
   const [edits, setEdits] = useState({})
   const [editing, setEditing] = useState(false)
   const [tab, setTab] = useState('overview')
@@ -114,6 +195,7 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
   const otCount = ledger.filter((s) => s.barTone === 'ot').length
 
   const visibleLedger = useMemo(() => {
+    const q = listQuery.trim().toLowerCase()
     return ledger.filter((s) => {
       if (listTab === 'worked' && s.dayOff) return false
       if (listTab === 'off' && !s.dayOff) return false
@@ -121,18 +203,33 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
       if (listPill === 'closed' && (s.dayOff || s.open)) return false
       if (listPill === 'ot' && s.barTone !== 'ot') return false
       if (listPill === 'off' && !s.dayOff) return false
-      return true
+      if (!q) return true
+      const hay = [
+        s.day,
+        s.yard,
+        s.date,
+        ...(s.jobs || []).flatMap((j) => [j.id, j.title, j.unit]),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      return hay.includes(q)
     })
-  }, [ledger, listTab, listPill])
+  }, [ledger, listTab, listPill, listQuery])
 
   const [selectedId, setSelectedId] = useState(worked[0]?.id || ledger[0]?.id)
   const selected = ledger.find((s) => s.id === selectedId) || ledger[0]
   const photos = useMemo(() => collectPhotos(selected?.jobs), [selected])
+  const activity = useMemo(() => buildActivity(selected), [selected])
   const done = jobsDoneCount(worked)
   const jobsTotal = totalJobs(worked)
   const primaryJob = selected?.jobs?.[0]
   const pings = useMemo(() => (selected ? buildLocationPings(selected) : []), [selected])
   const clockLoc = selected && !selected.dayOff ? clockInLocation(selected) : null
+
+  const periodHours = emp.payable || '—'
+  const periodProd = emp.jobHrs || '—'
+  const periodUtil = emp.util != null ? `${emp.util}%` : '—'
 
   useEffect(() => {
     if (!visibleLedger.some((s) => s.id === selectedId)) {
@@ -172,9 +269,36 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
   }
 
   return (
-    <section className="pd">
+    <section className="pd dash3">
       <div className="pd-shell">
         <aside className="pd-list">
+          <div className="pd-list-profile">
+            <div className="pav" style={{ background: emp.bg, color: emp.color }}>
+              {emp.initials}
+            </div>
+            <div className="pd-list-profile-text">
+              <b>{emp.name}</b>
+              <span>
+                {emp.role} · {emp.id?.toUpperCase?.() || emp.id}
+              </span>
+            </div>
+          </div>
+
+          <div className="pd-list-stats">
+            <div>
+              <span>Hours</span>
+              <b className="num">{periodHours}</b>
+            </div>
+            <div>
+              <span>Productive</span>
+              <b className="num">{periodProd}</b>
+            </div>
+            <div>
+              <span>Util.</span>
+              <b className="num">{periodUtil}</b>
+            </div>
+          </div>
+
           <div className="pd-list-head">
             <div className="pd-list-tabs">
               <button
@@ -185,7 +309,7 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                   setListPill('all')
                 }}
               >
-                All shifts
+                All shifts <em>{ledger.length}</em>
               </button>
               <button
                 type="button"
@@ -195,7 +319,7 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                   setListPill('all')
                 }}
               >
-                Worked
+                Worked <em>{worked.length}</em>
               </button>
               <button
                 type="button"
@@ -205,10 +329,19 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                   setListPill('off')
                 }}
               >
-                Day off
-                <span className="pd-tab-badge">{dayOffCount}</span>
+                Day off <em>{dayOffCount}</em>
               </button>
             </div>
+
+            <label className="pd-list-search">
+              <Search size={14} />
+              <input
+                value={listQuery}
+                onChange={(e) => setListQuery(e.target.value)}
+                placeholder="Search shifts…"
+                aria-label="Search shifts"
+              />
+            </label>
 
             <div className="pd-list-tools">
               <div className="pd-list-pills">
@@ -250,9 +383,6 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
               >
                 <CalendarRange size={15} strokeWidth={2.2} />
               </button>
-              <button type="button" className="pd-range-btn" title="Filters" aria-label="Filters">
-                <Filter size={15} strokeWidth={2.2} />
-              </button>
             </div>
 
             {showRange ? (
@@ -277,15 +407,16 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
           </div>
 
           <div className="pd-list-body">
-            {visibleLedger.map((s, idx) => {
+            {visibleLedger.map((s) => {
               const job = s.jobs?.[0]
+              const extra = Math.max((s.jobs?.length || 0) - 1, 0)
               const statusLabel = s.dayOff
-                ? 'DAY OFF'
+                ? 'Day off'
                 : s.open
-                  ? 'OPEN'
+                  ? 'Open punch'
                   : s.barTone === 'ot'
                     ? 'OT'
-                    : 'CLOSED'
+                    : 'Closed'
               const statusTone = s.dayOff
                 ? 'muted'
                 : s.open
@@ -293,75 +424,59 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                   : s.barTone === 'ot'
                     ? 'warn'
                     : 'ok'
-              const priority = s.open ? 'High priority' : s.barTone === 'ot' ? 'Medium priority' : 'Normal'
-              const stripe =
-                s.open || s.barTone === 'ot' ? 'orange' : s.dayOff ? 'gray' : 'blue'
-              const zebra = idx % 3 === 0 ? 'z-white' : idx % 3 === 1 ? 'z-gray' : 'z-soft'
+              const priority = s.open
+                ? 'High priority'
+                : s.barTone === 'ot'
+                  ? 'Medium priority'
+                  : 'Normal priority'
 
               return (
                 <button
                   type="button"
                   key={s.id}
-                  className={`pd-shift-card stripe-${stripe} ${zebra}${selectedId === s.id ? ' on' : ''}${s.dayOff ? ' day-off' : ''}`}
+                  className={`pd-shift-card${selectedId === s.id ? ' on' : ''}${s.dayOff ? ' day-off' : ''}${s.open ? ' is-open' : ''}`}
                   onClick={() => selectDay(s.id)}
                 >
-                  <i className="pd-shift-stripe" aria-hidden />
-                  <div className="pd-shift-inner">
-                    <div className="pd-shift-top">
-                      <span className="pd-shift-id mono">{(s.date || s.short || '').replace(/-/g, '')}</span>
-                      <div className="pd-shift-tags">
-                        <span className={`pd-mini-tag ${statusTone}`}>{statusLabel}</span>
-                        <span className="pd-mini-tag muted">{s.yard}</span>
-                        <span className="pd-shift-more" aria-hidden>
-                          <MoreVertical size={14} />
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="pd-shift-title">
-                      {s.dayOff
-                        ? 'No work recorded'
-                        : job
-                          ? job.title
-                          : `${s.jobCount} job${s.jobCount === 1 ? '' : 's'}`}
-                    </div>
-                    <div className="pd-shift-loc">
-                      <MapPin size={12} />
-                      {s.dayOff ? 'Scheduled day off' : `${s.yard} · ${s.day}`}
-                    </div>
-
-                    <div className="pd-shift-grid">
-                      <div>
-                        <span>In</span>
-                        <b>{s.dayOff || !s.in ? '—' : formatClock(s.in)}</b>
-                      </div>
-                      <div>
-                        <span>Out</span>
-                        <b>{s.dayOff || s.open ? '—' : formatClock(s.out)}</b>
-                      </div>
-                      <div>
-                        <span>Total</span>
-                        <b>{s.dayOff ? '0:00' : s.open ? 'Open' : s.totalHours || s.hoursLabel}</b>
-                      </div>
-                      <div>
-                        <span>Productive</span>
-                        <b>{s.dayOff ? '0:00' : s.productiveHours || s.onJobs}</b>
-                      </div>
-                    </div>
-
-                    <div className="pd-shift-foot">
-                      <span className="pd-shift-pri">
-                        <i />
-                        {priority}
-                      </span>
-                      <span className="pd-shift-assignee">
-                        <i className="pav xs" style={{ background: emp.bg, color: emp.color }}>
-                          {emp.initials}
-                        </i>
-                        {emp.name}
-                      </span>
-                    </div>
+                  <div className="pd-shift-top">
+                    <span className="pd-shift-day">{s.day}</span>
+                    <span className={`pd-mini-tag ${statusTone}`}>
+                      {s.open ? <i className="pd-pulse" /> : null}
+                      {statusLabel}
+                    </span>
                   </div>
+
+                  <div className="pd-shift-title">
+                    {s.dayOff
+                      ? 'No work recorded'
+                      : job
+                        ? `${job.title}${extra ? ` +${extra}` : ''}`
+                        : `${s.jobCount} jobs`}
+                  </div>
+                  <div className="pd-shift-loc">
+                    {s.dayOff ? 'Scheduled day off' : `${s.yard} · ${priority}`}
+                  </div>
+
+                  {!s.dayOff ? (
+                    <div className="pd-shift-barrow">
+                      <span className="pd-shift-range num">
+                        {formatClock(s.in)} → {s.open ? 'open' : formatClock(s.out)}
+                      </span>
+                      <div className="pd-mini-rail">
+                        {(s.segs || [])
+                          .filter((seg) => seg.type !== 'sched')
+                          .map((seg, i) => (
+                            <i
+                              key={i}
+                              className={seg.type}
+                              style={{ left: seg.left, width: seg.width }}
+                            />
+                          ))}
+                      </div>
+                      <span className="pd-shift-dur num">
+                        {s.open ? s.productiveHours || s.onJobs : s.totalHours || s.hoursLabel}
+                      </span>
+                    </div>
+                  ) : null}
                 </button>
               )
             })}
@@ -373,469 +488,458 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
 
         <div className="pd-detail">
           <div className="pd-detail-scroll">
-          {selected?.dayOff ? (
-            <div className="pd-dayoff">
-              <div className="pd-dayoff-badge">Day off</div>
-              <h2>{selected.day}</h2>
-              <p>
-                No punch-in, jobs, or location pings for this day in the selected range. The worker
-                did not record any work.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="pd-hero">
-                <div className="pd-hero-top">
-                  <div className="pd-hero-title">
-                    <span className="pd-hero-id">{selected.day}</span>
-                    <h2>
-                      {primaryJob ? `${primaryJob.title}` : 'Shift detail'}
-                      {primaryJob?.unit && primaryJob.unit !== '—' ? (
-                        <span className="pd-hero-unit"> · {primaryJob.unit}</span>
-                      ) : null}
-                    </h2>
-                  </div>
-                  <div className="pd-hero-tags">
-                    <span className="pd-tag muted">{selected.tz}</span>
-                    <span className={`pd-tag ${selected.open ? 'warn' : 'ok'}`}>
-                      {selected.open ? 'Open punch' : 'Shift closed'}
-                    </span>
-                    <span className="pd-tag accent">{selected.jobCount} jobs</span>
-                    <span className="pd-tag info">{selected.yard}</span>
-                  </div>
-                </div>
-
-                <div className="pd-hero-loc">
-                  <MapPin size={13} strokeWidth={2.2} />
-                  {selected.yard} yard · {emp.role}
-                </div>
-
-                <div className="pd-meta-strip">
-                  <div>
-                    <span>Clock in</span>
-                    <b>{formatClock(selected.in)}</b>
-                  </div>
-                  <div>
-                    <span>Clock out</span>
-                    <b>{selected.open ? 'Still open' : formatClock(selected.out)}</b>
-                  </div>
-                  <div>
-                    <span>Total hours</span>
-                    <b>{selected.open ? '—' : selected.totalHours || selected.hoursLabel}</b>
-                  </div>
-                  <div>
-                    <span>Productive</span>
-                    <b>{selected.productiveHours || selected.onJobs}</b>
-                  </div>
-                  <div>
-                    <span>Period jobs</span>
-                    <b>
-                      {done}/{jobsTotal}
-                    </b>
-                  </div>
-                  <div className="pd-meta-person">
-                    <span>Worker</span>
-                    <b>
-                      <i className="pav xs" style={{ background: emp.bg, color: emp.color }}>
-                        {emp.initials}
-                      </i>
-                      {emp.name}
-                    </b>
-                  </div>
-                </div>
+            {selected?.dayOff ? (
+              <div className="pd-dayoff">
+                <div className="pd-dayoff-badge">Day off</div>
+                <h2>{selected.day}</h2>
+                <p>
+                  No punch-in, jobs, or location pings for this day in the selected range.
+                </p>
               </div>
-
-              <div className="pd-tabs">
-                {[
-                  ['overview', 'Overview'],
-                  ['jobs', 'Jobs'],
-                  ['shift', 'Shift'],
-                  ['location', 'Location timeline'],
-                  ['pay', 'Pay codes'],
-                ].map(([id, label]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    className={tab === id ? 'on' : ''}
-                    onClick={() => setTab(id)}
-                  >
-                    {label}
-                  </button>
-                ))}
-                <button type="button" className="pd-upload">
-                  <Upload size={13} strokeWidth={2.2} /> Upload
-                </button>
-              </div>
-
-              {tab === 'overview' ? (
-                <div className="pd-overview">
-                  <div className="pd-photos">
-                    <div className="pd-sec-title">Photos ({photos.length})</div>
-                    {photos.length ? (
-                      <div className="pd-photo-grid">
-                        {photos.map((p, i) => (
-                          <figure key={`${p.jobId}-${i}`} className="pd-photo">
-                            <img src={p.src} alt={p.label} />
-                            <figcaption>
-                              <span>{p.label}</span>
-                              <span>{p.ago}</span>
-                            </figcaption>
-                          </figure>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="pd-empty">No photos for this day.</div>
-                    )}
-                  </div>
-
-                  <div className="pd-side">
-                    <div className="pd-overview-card">
-                      <div className="pd-sec-title row">
-                        <span>Shift overview</span>
-                        <button
-                          type="button"
-                          className="btn btn-sm"
-                          onClick={() => setEditing((v) => !v)}
-                        >
-                          <Pencil size={12} strokeWidth={2.2} />
-                          Edit hours
-                        </button>
-                      </div>
-
-                      {editing ? (
-                        <EditPunchForm
-                          punchIn={selected.in}
-                          punchOut={selected.out}
-                          onSave={savePunch}
-                          onCancel={() => setEditing(false)}
-                        />
-                      ) : (
-                        <div className="pd-time-boxes">
-                          <div className="pd-tbox green">
-                            <span>Productive hours</span>
-                            <b>{selected.productiveHours || selected.onJobs}</b>
-                            <em>Active work</em>
-                          </div>
-                          <div className="pd-tbox blue">
-                            <span>Started</span>
-                            <b>{formatClock(selected.in)}</b>
-                            <em>{selected.day}</em>
-                          </div>
-                          <div className="pd-tbox gray">
-                            <span>Ended</span>
-                            <b>{selected.open ? 'Open' : formatClock(selected.out)}</b>
-                            <em>{selected.open ? 'No punch-out' : selected.day}</em>
-                          </div>
-                        </div>
-                      )}
-
-                      {clockLoc ? (
-                        <button
-                          type="button"
-                          className="pd-loc-chip"
-                          onClick={() => showOnMap(clockLoc.id)}
-                        >
-                          <MapPin size={13} />
-                          <div>
-                            <b>
-                              {formatClock(selected.in)} · Clocked in
-                            </b>
-                            <span>{clockLoc.address}</span>
-                            <em className="mono">
-                              {clockLoc.lat.toFixed(5)}, {clockLoc.lng.toFixed(5)}
-                            </em>
-                          </div>
-                          <span className="pd-loc-chip-cta">Show on map →</span>
-                        </button>
-                      ) : null}
-
-                      <div className="pd-worker-row">
-                        <div className="pav" style={{ background: emp.bg, color: emp.color }}>
-                          {emp.initials}
-                        </div>
-                        <div>
-                          <div className="pd-worker-name">{emp.name}</div>
-                          <div className="pd-worker-sub">{emp.role}</div>
-                        </div>
-                        <Chip tone={emp.status.tone} xs>
-                          {emp.status.label}
-                        </Chip>
-                      </div>
-                    </div>
-
-                    <div className="pd-overview-card">
-                      <div className="pd-sec-title">Jobs completed</div>
-                      <div className="pd-job-sum">
-                        <div>
-                          <b>{selected.jobs?.filter((j) => j.status?.tone === 'ok').length || 0}</b>
-                          <span>done today</span>
-                        </div>
-                        <div>
-                          <b>{selected.jobs?.length || 0}</b>
-                          <span>total today</span>
-                        </div>
-                        <div>
-                          <b>
-                            {done}/{jobsTotal}
-                          </b>
-                          <span>period</span>
-                        </div>
-                      </div>
-                      <ul className="pd-job-mini">
-                        {(selected.jobs || []).map((j) => (
-                          <li key={j.id}>
-                            <span className="mono">{j.id}</span>
-                            <span className="grow">{j.title}</span>
-                            <Chip tone={j.status.tone} xs>
-                              {j.status.label}
-                            </Chip>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {selected.exception ? (
-                      <button type="button" className="pd-exc-card" onClick={onResolvePunch}>
-                        <AlertTriangle size={14} />
-                        <div>
-                          <b>{formatClock(selected.exception.time)}</b>
-                          <span>{selected.exception.text}</span>
-                        </div>
-                        <em>Resolve →</em>
+            ) : (
+              <>
+                {selected.open ? (
+                  <div className="pd-warn-banner">
+                    <AlertTriangle size={15} />
+                    <span>No punch-out recorded — this shift can&apos;t be paid until resolved.</span>
+                    <div className="pd-warn-actions">
+                      <button type="button" className="btn btn-sm" onClick={() => setEditing(true)}>
+                        Enter manually
                       </button>
-                    ) : null}
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        onClick={() =>
+                          onResolvePunch
+                            ? onResolvePunch()
+                            : savePunch({ in: selected.in, out: '15:56' })
+                        }
+                      >
+                        Use 3:56 PM
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : null}
+                ) : null}
 
-              {tab === 'jobs' ? (
-                <div className="pd-jobs-panel">
-                  {(selected.jobs || []).map((job) => {
-                    const jobPing = pings.find((p) => p.jobId === job.id)
-                    return (
-                      <div className="pd-job-detail" key={job.id}>
-                        <div className="pd-job-detail-top">
-                          <div>
-                            <div className="pd-job-detail-title">
-                              {job.title} · {job.unit}
-                            </div>
-                            <div className="pd-job-detail-sub mono">{job.id}</div>
-                          </div>
-                          <Chip tone={job.status.tone}>{job.status.label}</Chip>
-                        </div>
-                        <div className="pd-time-boxes three">
-                          <div className="pd-tbox green">
-                            <span>Time spent</span>
-                            <b>{job.actual}</b>
-                            <em>est {job.est}</em>
-                          </div>
-                          <div className="pd-tbox blue">
-                            <span>Started</span>
-                            <b>{job.start ? formatClock(job.start) : '—'}</b>
-                            <em>{selected.day}</em>
-                          </div>
-                          <div className="pd-tbox gray">
-                            <span>Ended</span>
-                            <b>{job.end ? formatClock(job.end) : 'In progress'}</b>
-                            <em>{job.status?.label || '—'}</em>
-                          </div>
-                        </div>
-                        {jobPing ? (
-                          <button
-                            type="button"
-                            className="pd-loc-chip compact"
-                            onClick={() => showOnMap(jobPing.id)}
-                          >
-                            <MapPin size={13} />
-                            <div>
-                              <b>{jobPing.address}</b>
-                              <em className="mono">
-                                {jobPing.lat.toFixed(5)}, {jobPing.lng.toFixed(5)}
-                              </em>
-                            </div>
-                            <span className="pd-loc-chip-cta">Map →</span>
-                          </button>
+                <div className="pd-hero">
+                  <div className="pd-hero-top">
+                    <div className="pd-hero-title">
+                      <span className="pd-hero-id">
+                        {selected.day} · Shift {(selected.date || '').replace(/-/g, '')}
+                      </span>
+                      <h2>
+                        {primaryJob ? primaryJob.title : 'Shift detail'}
+                        {primaryJob?.unit && primaryJob.unit !== '—' ? (
+                          <span className="pd-hero-unit"> · {primaryJob.unit}</span>
                         ) : null}
-                        <div className="pd-photo-grid sm">
-                          {(job.photos || []).map((p, i) => (
-                            <figure key={i} className="pd-photo">
-                              <img src={typeof p === 'string' ? p : p.src} alt={p.label || 'Photo'} />
-                              <figcaption>
-                                <span>{p.label || `Photo ${i + 1}`}</span>
-                                <span>checklist {job.checklist}</span>
-                              </figcaption>
-                            </figure>
-                          ))}
-                        </div>
+                      </h2>
+                      <div className="pd-hero-loc">
+                        <MapPin size={13} strokeWidth={2.2} />
+                        {selected.yard} · {emp.role} · {emp.id}
                       </div>
-                    )
-                  })}
-                  {!selected.jobs?.length ? <div className="pd-empty">No jobs on this day.</div> : null}
-                </div>
-              ) : null}
+                    </div>
+                    <div className="pd-hero-tags">
+                      <span className={`pd-tag ${selected.open ? 'warn' : 'ok'}`}>
+                        {selected.open ? 'Open punch' : 'Closed'}
+                      </span>
+                      <span className="pd-tag muted">{selected.jobCount} jobs</span>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => setEditing((v) => !v)}
+                      >
+                        <Pencil size={12} /> Edit
+                      </button>
+                    </div>
+                  </div>
 
-              {tab === 'shift' ? (
-                <div className="pd-shift-panel">
-                  <div className="pd-sec-title row">
-                    <span>
-                      <Clock3 size={13} /> Timeline · {selected.yard} · {selected.tz}
-                    </span>
-                    <button type="button" className="btn btn-sm" onClick={() => setEditing(true)}>
-                      <Pencil size={12} /> Edit hours
-                    </button>
-                  </div>
-                  {editing ? (
-                    <EditPunchForm
-                      punchIn={selected.in}
-                      punchOut={selected.out}
-                      onSave={savePunch}
-                      onCancel={() => setEditing(false)}
-                    />
-                  ) : null}
-                  <div className="pd-rail-wrap">
-                    <div className="rail-scale">
-                      {['5 AM', '8 AM', '11 AM', '2 PM', '5 PM', '8 PM', '11 PM'].map((t) => (
-                        <span key={t}>{t}</span>
-                      ))}
-                    </div>
-                    <div className="rail tall">
-                      {(selected.segs || []).map((seg, i) =>
-                        seg.type === 'sched' ? (
-                          <span key={i} className="sched" style={{ left: seg.left, width: seg.width }} />
-                        ) : (
-                          <span
-                            key={i}
-                            className={`seg ${seg.type}`}
-                            style={{ left: seg.left, width: seg.width }}
-                          />
-                        ),
-                      )}
-                    </div>
-                    <div className="rail-legend">
-                      <span>
-                        <i className="ls" /> Scheduled
-                      </span>
-                      <span>
-                        <i className="lw" /> Clocked in
-                      </span>
-                      <span>
-                        <i className="lj" /> On a job
-                      </span>
-                      <span>
-                        <i className="lb" /> Break
-                      </span>
-                      <span>
-                        <i className="lo" /> Open punch
-                      </span>
-                    </div>
-                  </div>
-                  <div className="pd-shift-times">
+                  <div className="pd-meta-strip">
                     <div>
-                      <span>In</span>
+                      <span>Clock in</span>
                       <b>{formatClock(selected.in)}</b>
                     </div>
                     <div>
-                      <span>Out</span>
-                      <b>{selected.open ? 'Still open' : formatClock(selected.out)}</b>
+                      <span>Clock out</span>
+                      <b className={selected.open ? 'miss' : ''}>
+                        {selected.open ? 'Missing' : formatClock(selected.out)}
+                      </b>
                     </div>
                     <div>
-                      <span>Total hours</span>
+                      <span>Paid hours</span>
                       <b>{selected.open ? '—' : selected.totalHours || selected.hoursLabel}</b>
                     </div>
                     <div>
                       <span>Productive</span>
                       <b>{selected.productiveHours || selected.onJobs}</b>
                     </div>
+                    <div>
+                      <span>Utilisation</span>
+                      <b>{selected.open ? '—' : periodUtil}</b>
+                    </div>
+                    <div>
+                      <span>Period jobs</span>
+                      <b>
+                        {done}/{jobsTotal}
+                      </b>
+                    </div>
                   </div>
                 </div>
-              ) : null}
 
-              {tab === 'location' ? (
-                <div className="pd-loc-panel">
-                  <div className="pd-loc-list">
-                    <div className="pd-sec-title">
-                      Location timeline · {pings.length} pings
-                    </div>
-                    {pings.map((p) => (
-                      <button
-                        type="button"
-                        key={p.id}
-                        className={`pd-loc-item${activePing === p.id ? ' on' : ''}`}
-                        onClick={() => setActivePing(p.id)}
-                      >
-                        <div className="pd-loc-item-top">
-                          <b>{formatClock(p.time)}</b>
-                          <Chip tone="neutral" xs>
-                            {p.label}
-                          </Chip>
+                {editing ? (
+                  <EditPunchForm
+                    punchIn={selected.in}
+                    punchOut={selected.out}
+                    onSave={savePunch}
+                    onCancel={() => setEditing(false)}
+                  />
+                ) : null}
+
+                <div className="pd-tabs">
+                  {[
+                    ['overview', 'Overview'],
+                    ['jobs', 'Jobs'],
+                    ['shift', 'Punches'],
+                    ['location', 'Location'],
+                    ['pay', 'Pay codes'],
+                  ].map(([id, label]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      className={tab === id ? 'on' : ''}
+                      onClick={() => setTab(id)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                  <button type="button" className="pd-upload">
+                    <Upload size={13} strokeWidth={2.2} /> Upload
+                  </button>
+                </div>
+
+                {tab === 'overview' ? (
+                  <div className="pd-overview-stack">
+                    <section className="pd-block">
+                      <div className="pd-sec-title">Photos</div>
+                      <div className="pd-photo-grid">
+                        {photos.map((p, i) => (
+                          <figure key={`${p.jobId}-${i}`} className="pd-photo">
+                            <div className="pd-photo-head">
+                              <span>
+                                {p.jobId} {p.title}
+                              </span>
+                              {p.status ? (
+                                <Chip tone={p.status.tone} xs>
+                                  {p.status.label}
+                                </Chip>
+                              ) : null}
+                            </div>
+                            <img src={p.src} alt={p.label} />
+                            <figcaption>
+                              <span>{String(p.label).toUpperCase()}</span>
+                              <span>{p.ago}</span>
+                            </figcaption>
+                          </figure>
+                        ))}
+                        {selected.open ? (
+                          <div className="pd-photo pd-photo-need">
+                            <Camera size={22} />
+                            <b>After photo required</b>
+                            <span>Capture when the wrap is complete</span>
+                          </div>
+                        ) : null}
+                        {!photos.length && !selected.open ? (
+                          <div className="pd-empty">No photos for this day.</div>
+                        ) : null}
+                      </div>
+                    </section>
+
+                    <section className="pd-block">
+                      <div className="pd-sec-title">Jobs on this shift</div>
+                      <div className="pd-job-rows">
+                        {(selected.jobs || []).map((j) => (
+                          <div className="pd-job-row" key={j.id}>
+                            <div className="pd-job-row-main">
+                              <span className="mono">{j.id}</span>
+                              <b>
+                                {j.title} · {j.unit}
+                              </b>
+                              <Chip tone={j.status.tone} xs>
+                                {j.status.label}
+                              </Chip>
+                            </div>
+                            <div className="pd-job-row-tl">
+                              <span className="num">
+                                {j.start ? formatClock(j.start) : '—'} →{' '}
+                                {j.end ? formatClock(j.end) : 'open'}
+                              </span>
+                              <div className="pd-job-bar">
+                                <i style={{ width: j.end ? '72%' : '48%' }} />
+                              </div>
+                              <span className="num pd-job-dur">{j.actual}</span>
+                            </div>
+                          </div>
+                        ))}
+                        {!selected.jobs?.length ? (
+                          <div className="pd-empty">No jobs on this day.</div>
+                        ) : null}
+                      </div>
+                    </section>
+                  </div>
+                ) : null}
+
+                {tab === 'jobs' ? (
+                  <div className="pd-jobs-panel">
+                    {(selected.jobs || []).map((job) => {
+                      const jobPing = pings.find((p) => p.jobId === job.id)
+                      return (
+                        <div className="pd-job-detail" key={job.id}>
+                          <div className="pd-job-detail-top">
+                            <div>
+                              <div className="pd-job-detail-title">
+                                {job.title} · {job.unit}
+                              </div>
+                              <div className="pd-job-detail-sub mono">{job.id}</div>
+                            </div>
+                            <Chip tone={job.status.tone}>{job.status.label}</Chip>
+                          </div>
+                          <div className="pd-time-boxes three">
+                            <div className="pd-tbox green">
+                              <span>Time spent</span>
+                              <b>{job.actual}</b>
+                              <em>est {job.est}</em>
+                            </div>
+                            <div className="pd-tbox blue">
+                              <span>Started</span>
+                              <b>{job.start ? formatClock(job.start) : '—'}</b>
+                              <em>{selected.day}</em>
+                            </div>
+                            <div className="pd-tbox gray">
+                              <span>Ended</span>
+                              <b>{job.end ? formatClock(job.end) : 'In progress'}</b>
+                              <em>{job.status?.label || '—'}</em>
+                            </div>
+                          </div>
+                          {jobPing ? (
+                            <button
+                              type="button"
+                              className="pd-loc-chip compact"
+                              onClick={() => showOnMap(jobPing.id)}
+                            >
+                              <MapPin size={13} />
+                              <div>
+                                <b>{jobPing.address}</b>
+                                <em className="mono">
+                                  {jobPing.lat.toFixed(5)}, {jobPing.lng.toFixed(5)}
+                                </em>
+                              </div>
+                              <span className="pd-loc-chip-cta">Map →</span>
+                            </button>
+                          ) : null}
+                          <div className="pd-photo-grid sm">
+                            {(job.photos || []).map((p, i) => (
+                              <figure key={i} className="pd-photo">
+                                <img
+                                  src={typeof p === 'string' ? p : p.src}
+                                  alt={p.label || 'Photo'}
+                                />
+                                <figcaption>
+                                  <span>{p.label || `Photo ${i + 1}`}</span>
+                                  <span>checklist {job.checklist}</span>
+                                </figcaption>
+                              </figure>
+                            ))}
+                          </div>
                         </div>
-                        <div className="pd-loc-item-addr">{p.address}</div>
-                        <div className="pd-loc-item-coords mono">
-                          {p.lat.toFixed(5)}, {p.lng.toFixed(5)}
-                        </div>
-                      </button>
-                    ))}
-                    {!pings.length ? (
-                      <div className="pd-empty">No location pings for this shift.</div>
+                      )
+                    })}
+                    {!selected.jobs?.length ? (
+                      <div className="pd-empty">No jobs on this day.</div>
                     ) : null}
                   </div>
-                  <div className="pd-loc-map-wrap">
-                    <LocationMap
-                      pings={pings}
-                      activeId={activePing}
-                      onSelect={setActivePing}
-                    />
-                  </div>
-                </div>
-              ) : null}
+                ) : null}
 
-              {tab === 'pay' ? (
-                <div className="pd-pay-panel">
-                  <div className="pay-tbl">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Pay code</th>
-                          <th className="num">Hours</th>
-                          <th>Note</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>
-                            <span className="code">REG</span> Regular
-                          </td>
-                          <td className="num">{emp.reg}</td>
-                          <td>Standard shift hours</td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <span className="code">OT1</span> Overtime
-                          </td>
-                          <td className="num">{emp.ot || '0:00'}</td>
-                          <td>{emp.ot ? 'Pending OT approval' : 'None this period'}</td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <span className="code">BRK</span> Unpaid break
-                          </td>
-                          <td className="num">(2:00)</td>
-                          <td>Auto meal deductions</td>
-                        </tr>
-                        <tr className="tot">
-                          <td>Payable total</td>
-                          <td className="num">{emp.payable}</td>
-                          <td>Hours only · no dollar amounts</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                {tab === 'shift' ? (
+                  <div className="pd-shift-panel">
+                    <div className="pd-sec-title row">
+                      <span>
+                        <Clock3 size={13} /> Timeline · {selected.yard} · {selected.tz}
+                      </span>
+                      <button type="button" className="btn btn-sm" onClick={() => setEditing(true)}>
+                        <Pencil size={12} /> Edit hours
+                      </button>
+                    </div>
+                    <div className="pd-rail-wrap">
+                      <div className="rail-scale">
+                        {['5 AM', '8 AM', '11 AM', '2 PM', '5 PM', '8 PM', '11 PM'].map((t) => (
+                          <span key={t}>{t}</span>
+                        ))}
+                      </div>
+                      <div className="rail tall">
+                        {(selected.segs || []).map((seg, i) =>
+                          seg.type === 'sched' ? (
+                            <span
+                              key={i}
+                              className="sched"
+                              style={{ left: seg.left, width: seg.width }}
+                            />
+                          ) : (
+                            <span
+                              key={i}
+                              className={`seg ${seg.type}`}
+                              style={{ left: seg.left, width: seg.width }}
+                            />
+                          ),
+                        )}
+                      </div>
+                      <div className="rail-legend">
+                        <span>
+                          <i className="ls" /> Scheduled
+                        </span>
+                        <span>
+                          <i className="lw" /> Clocked in
+                        </span>
+                        <span>
+                          <i className="lj" /> On a job
+                        </span>
+                        <span>
+                          <i className="lb" /> Break
+                        </span>
+                        <span>
+                          <i className="lo" /> Open punch
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ) : null}
-            </>
-          )}
+                ) : null}
+
+                {tab === 'location' ? (
+                  <div className="pd-loc-panel">
+                    <div className="pd-loc-list">
+                      <div className="pd-sec-title">Location timeline · {pings.length} pings</div>
+                      {pings.map((p) => (
+                        <button
+                          type="button"
+                          key={p.id}
+                          className={`pd-loc-item${activePing === p.id ? ' on' : ''}`}
+                          onClick={() => setActivePing(p.id)}
+                        >
+                          <div className="pd-loc-item-top">
+                            <b>{formatClock(p.time)}</b>
+                            <Chip tone="neutral" xs>
+                              {p.label}
+                            </Chip>
+                          </div>
+                          <div className="pd-loc-item-addr">{p.address}</div>
+                          <div className="pd-loc-item-coords mono">
+                            {p.lat.toFixed(5)}, {p.lng.toFixed(5)}
+                          </div>
+                        </button>
+                      ))}
+                      {!pings.length ? (
+                        <div className="pd-empty">No location pings for this shift.</div>
+                      ) : null}
+                    </div>
+                    <div className="pd-loc-map-wrap">
+                      <LocationMap
+                        pings={pings}
+                        activeId={activePing}
+                        onSelect={setActivePing}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+
+                {tab === 'pay' ? (
+                  <div className="pd-pay-panel">
+                    <div className="pay-tbl">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Pay code</th>
+                            <th className="num">Hours</th>
+                            <th>Note</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>
+                              <span className="code">REG</span> Regular
+                            </td>
+                            <td className="num">{emp.reg}</td>
+                            <td>Standard shift hours</td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <span className="code">OT1</span> Overtime
+                            </td>
+                            <td className="num">{emp.ot || '0:00'}</td>
+                            <td>{emp.ot ? 'Pending OT approval' : 'None this period'}</td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <span className="code">BRK</span> Unpaid break
+                            </td>
+                            <td className="num">(2:00)</td>
+                            <td>Auto meal deductions</td>
+                          </tr>
+                          <tr className="tot">
+                            <td>Payable total</td>
+                            <td className="num">{emp.payable}</td>
+                            <td>Hours only · no dollar amounts</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            )}
           </div>
         </div>
+
+        <aside className="pd-activity">
+          <div className="pd-activity-head">
+            <span>Punch &amp; activity</span>
+            <em>{activity.length} events</em>
+          </div>
+          {selected?.dayOff ? (
+            <div className="pd-empty">No punch activity on a day off.</div>
+          ) : (
+            <div className="pd-activity-list">
+              {activity.map((ev) => (
+                <div
+                  key={ev.id}
+                  className={`pd-act${ev.tone === 'warn' ? ' warn' : ''}${ev.tone === 'muted' ? ' muted' : ''}${ev.alert ? ' alert' : ''}`}
+                >
+                  <span className="pd-act-time num">{formatClock(ev.time)}</span>
+                  <span className={`pd-act-dot ${ev.tone}`} />
+                  <div className="pd-act-body">
+                    <b>{ev.title}</b>
+                    <span>{ev.detail}</span>
+                  </div>
+                </div>
+              ))}
+              {selected?.open ? (
+                <div className="pd-act-note">
+                  <AlertTriangle size={14} />
+                  <div>
+                    <b>Punch-out missing</b>
+                    <span>
+                      Unbooked time will appear here once the shift is closed. Gate exit suggested{' '}
+                      {formatClock(selected.exception?.time || '15:56')}.
+                    </span>
+                  </div>
+                </div>
+              ) : null}
+              {clockLoc ? (
+                <button type="button" className="pd-act-map" onClick={() => showOnMap(clockLoc.id)}>
+                  <MapPin size={13} />
+                  Show clock-in on map
+                </button>
+              ) : null}
+            </div>
+          )}
+        </aside>
       </div>
     </section>
   )
