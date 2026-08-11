@@ -21,7 +21,6 @@ export default function App() {
   const [personId, setPersonId] = useState(null)
   const [collapsed, setCollapsed] = useState(false)
   const [location, setLocation] = useState('Brampton')
-  const [departments, setDepartments] = useState(['decals'])
   const [search, setSearch] = useState('')
   const [employees, setEmployees] = useState(EMPLOYEES)
   const [assignOpen, setAssignOpen] = useState(false)
@@ -236,8 +235,6 @@ export default function App() {
           showLocation={view === 'payroll'}
           location={location}
           onLocationChange={setLocation}
-          departments={departments}
-          onDepartmentsChange={setDepartments}
           search={search}
           onSearchChange={setSearch}
           exceptionCount={blockingCount}
@@ -260,7 +257,6 @@ export default function App() {
               employees={employees}
               location={location}
               search={search}
-              departments={departments}
               onOpenPerson={openPerson}
               onApprove={(id) => openApprove(id)}
               onResolvePunch={(id) => openPunch(id)}

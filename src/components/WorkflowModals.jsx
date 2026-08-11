@@ -320,7 +320,7 @@ export function ProofTimesheetModal({ employee, onClose, onShare }) {
   const proofText = useMemo(() => {
     if (!employee) return ''
     const lines = [
-      `Backdash · Proof of timesheet`,
+      `Decals · Proof of timesheet`,
       `${employee.name} · ${employee.role}`,
       `Pay period: Jul 7 – 20, 2026`,
       `Payable: ${employee.payable} · Regular: ${employee.reg} · OT: ${employee.ot || '—'}`,

@@ -24,7 +24,7 @@ export function Sidebar({ view, onNavigate, collapsed, onToggle }) {
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
       <div className="brand">
-        {!collapsed && <div className="brand-name">Backdash</div>}
+        {!collapsed && <div className="brand-name">Decals</div>}
         <button
           className="sb-toggle"
           type="button"

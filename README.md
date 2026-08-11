@@ -1,19 +1,14 @@
-# Backdash
+# Decals
 
-Decals operations dashboard — labour & payroll, jobs board, assign work, unit costing, and configuration.
+Labour, jobs & payroll ops dashboard for the Decals team.
 
-Built with **React + Vite**. Design tokens match Accessorial Management and Sales Rep Reporting.
-
-## Develop
+## Local
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Build
+## Live
 
-```bash
-npm run build
-npm run preview
-```
+https://backdash-iota.vercel.app

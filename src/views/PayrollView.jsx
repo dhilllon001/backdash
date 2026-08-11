@@ -1,20 +1,18 @@
 import { useMemo, useState, Fragment } from 'react'
 import { ChevronRight, CalendarRange, X } from 'lucide-react'
 import { Chip } from '../components/ui.jsx'
-import { EMPLOYEES, DEPARTMENTS, deptLabel } from '../data/mock.js'
+import { EMPLOYEES } from '../data/mock.js'
 
-function matchesBase(emp, location, search, departments) {
+function matchesBase(emp, location, search) {
   if (emp.region !== 'ontario') return false
   const q = search.trim().toLowerCase()
   const locOk = location === 'all' || emp.yards.some((y) => y === location)
-  const deptOk = !departments?.length || departments.includes(emp.department)
   const searchOk =
     !q ||
     emp.name.toLowerCase().includes(q) ||
     emp.role.toLowerCase().includes(q) ||
-    emp.department?.toLowerCase().includes(q) ||
     emp.yards.some((y) => y.toLowerCase().includes(q))
-  return locOk && deptOk && searchOk
+  return locOk && searchOk
 }
 
 function matchesStatus(emp, statusFilter) {
@@ -52,11 +50,6 @@ function EmpRow({ emp, onOpenPerson, onApprove, onResolvePunch }) {
             <span className="muted">{emp.role}</span>
           </span>
         </div>
-      </td>
-      <td>
-        <Chip tone="info" xs>
-          {deptLabel(emp.department)}
-        </Chip>
       </td>
       <td>
         <div className="yard-chips">
@@ -154,7 +147,6 @@ export function PayrollView({
   employees = EMPLOYEES,
   location,
   search,
-  departments = [],
   onOpenPerson,
   onApprove,
   onResolvePunch,
@@ -165,8 +157,8 @@ export function PayrollView({
   const [utilMin, setUtilMin] = useState('all')
 
   const baseRows = useMemo(
-    () => employees.filter((e) => matchesBase(e, location, search, departments)),
-    [employees, location, search, departments],
+    () => employees.filter((e) => matchesBase(e, location, search)),
+    [employees, location, search],
   )
 
   const counts = useMemo(() => {
@@ -194,20 +186,7 @@ export function PayrollView({
     })
   }, [baseRows, activeStatus, utilMin])
 
-  const shouldGroup = departments.length > 1
-  const groups = useMemo(() => {
-    if (!shouldGroup) return [{ id: 'flat', label: null, rows }]
-    const order = DEPARTMENTS.map((d) => d.id)
-    const map = new Map()
-    rows.forEach((emp) => {
-      const key = emp.department || 'other'
-      if (!map.has(key)) map.set(key, [])
-      map.get(key).push(emp)
-    })
-    return order
-      .filter((id) => map.has(id))
-      .map((id) => ({ id, label: deptLabel(id), rows: map.get(id) }))
-  }, [rows, shouldGroup])
+  const groups = useMemo(() => [{ id: 'flat', label: null, rows }], [rows])
 
   const toggleKpi = (id) => {
     setKpiFilter((prev) => {
@@ -416,7 +395,6 @@ export function PayrollView({
           <thead>
             <tr>
               <th>Employee</th>
-              <th>Department</th>
               <th>Yard</th>
               <th className="num">Payable</th>
               <th className="num">Reg</th>
@@ -433,7 +411,7 @@ export function PayrollView({
               <Fragment key={g.id}>
                 {g.label ? (
                   <tr className="dept-group-row">
-                    <td colSpan={11}>
+                    <td colSpan={10}>
                       <span className="dept-group-label">{g.label}</span>
                       <span className="dept-group-count">{g.rows.length} people</span>
                     </td>
@@ -452,7 +430,7 @@ export function PayrollView({
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={11} className="empty-cell">
+                <td colSpan={10} className="empty-cell">
                   No people match these filters.
                 </td>
               </tr>
@@ -461,12 +439,11 @@ export function PayrollView({
           {rows.length > 0 && (
             <tfoot>
               <tr>
-                <td colSpan={3}>
+                <td colSpan={2}>
                   {rows.length} people ·{' '}
                   {period === 'current'
                     ? 'Jul 7 – 20'
                     : PERIODS.find((p) => p.id === period)?.label}
-                  {shouldGroup ? ' · grouped by department' : ''}
                 </td>
                 <td className="num">—</td>
                 <td className="num">—</td>
