@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   MapPin,
-  AlertTriangle,
   Upload,
   Clock3,
   Pencil,
@@ -103,7 +102,9 @@ function buildActivity(shift) {
       time: shift.exception?.time || '15:56',
       tone: 'warn',
       title: 'Punch-out missing',
-      detail: shift.exception?.text || 'No punch-out recorded',
+      detail:
+        shift.exception?.text ||
+        'No clock-out recorded · Unbooked time stays open until resolved',
       alert: true,
     })
   } else if (shift.out) {
@@ -480,29 +481,6 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
               </div>
             ) : (
               <>
-                {selected.open ? (
-                  <div className="pd-warn-banner">
-                    <AlertTriangle size={15} />
-                    <span>No punch-out recorded — this shift can&apos;t be paid until resolved.</span>
-                    <div className="pd-warn-actions">
-                      <button type="button" className="btn btn-sm" onClick={() => setEditing(true)}>
-                        Enter manually
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-primary"
-                        onClick={() =>
-                          onResolvePunch
-                            ? onResolvePunch()
-                            : savePunch({ in: selected.in, out: '15:56' })
-                        }
-                      >
-                        Use 3:56 PM
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-
                 <div className="pd-hero">
                   <div className="pd-hero-top">
                     <div className="pd-hero-title">
@@ -600,57 +578,6 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
 
                 {tab === 'overview' ? (
                   <div className="pd-overview-stack">
-                    {(selected.open ||
-                      !selected.out ||
-                      (selected.jobs || []).some((j) => !j.end) ||
-                      !photos.length) && (
-                      <div className="pd-alert-bar">
-                        <AlertTriangle size={15} />
-                        <div className="pd-alert-copy">
-                          <b>
-                            {selected.open
-                              ? 'Punch-out missing'
-                              : (selected.jobs || []).some((j) => !j.end)
-                                ? 'Open job on this shift'
-                                : 'Review needed'}
-                          </b>
-                          <span>
-                            {[
-                              selected.open ? 'No clock-out recorded' : null,
-                              (selected.jobs || []).some((j) => !j.end)
-                                ? 'At least one job is still in progress'
-                                : null,
-                              !photos.length ? 'No photos uploaded yet' : null,
-                            ]
-                              .filter(Boolean)
-                              .join(' · ')}
-                          </span>
-                        </div>
-                        {selected.open ? (
-                          <div className="pd-warn-actions">
-                            <button
-                              type="button"
-                              className="btn btn-sm"
-                              onClick={() => setEditing(true)}
-                            >
-                              Enter manually
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-primary"
-                              onClick={() =>
-                                onResolvePunch
-                                  ? onResolvePunch()
-                                  : savePunch({ in: selected.in, out: '15:56' })
-                              }
-                            >
-                              Use 3:56 PM
-                            </button>
-                          </div>
-                        ) : null}
-                      </div>
-                    )}
-
                     <div className="pd-overview-grid">
                       <div className="pd-overview-main">
                         <section className="pd-block">
@@ -746,21 +673,31 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                               <div className="pd-act-body">
                                 <b>{ev.title}</b>
                                 <span>{ev.detail}</span>
+                                {ev.alert ? (
+                                  <div className="pd-act-actions">
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm"
+                                      onClick={() => setEditing(true)}
+                                    >
+                                      Enter manually
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-primary"
+                                      onClick={() =>
+                                        onResolvePunch
+                                          ? onResolvePunch()
+                                          : savePunch({ in: selected.in, out: '15:56' })
+                                      }
+                                    >
+                                      Use {formatClock(selected.exception?.time || '15:56')}
+                                    </button>
+                                  </div>
+                                ) : null}
                               </div>
                             </div>
                           ))}
-                          {selected.open ? (
-                            <div className="pd-act-note">
-                              <AlertTriangle size={14} />
-                              <div>
-                                <b>Punch-out missing</b>
-                                <span>
-                                  Unbooked time will appear once the shift is closed. Gate exit
-                                  suggested {formatClock(selected.exception?.time || '15:56')}.
-                                </span>
-                              </div>
-                            </div>
-                          ) : null}
                           {clockLoc ? (
                             <button
                               type="button"
@@ -1032,21 +969,31 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                   <div className="pd-act-body">
                     <b>{ev.title}</b>
                     <span>{ev.detail}</span>
+                    {ev.alert ? (
+                      <div className="pd-act-actions">
+                        <button
+                          type="button"
+                          className="btn btn-sm"
+                          onClick={() => setEditing(true)}
+                        >
+                          Enter manually
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-primary"
+                          onClick={() =>
+                            onResolvePunch
+                              ? onResolvePunch()
+                              : savePunch({ in: selected.in, out: '15:56' })
+                          }
+                        >
+                          Use {formatClock(selected.exception?.time || '15:56')}
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               ))}
-              {selected?.open ? (
-                <div className="pd-act-note">
-                  <AlertTriangle size={14} />
-                  <div>
-                    <b>Punch-out missing</b>
-                    <span>
-                      Unbooked time will appear here once the shift is closed. Gate exit suggested{' '}
-                      {formatClock(selected.exception?.time || '15:56')}.
-                    </span>
-                  </div>
-                </div>
-              ) : null}
               {clockLoc ? (
                 <button type="button" className="pd-act-map" onClick={() => showOnMap(clockLoc.id)}>
                   <MapPin size={13} />

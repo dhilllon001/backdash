@@ -8080,3 +8080,30 @@ tr.sub .t-lab { color: var(--text-2); }
 @media (max-width: 900px) {
   .pd.dash3 .pd-jcard-metrics { grid-template-columns: 1fr 1fr; }
 }
+
+/* Activity line: punch-out missing on connected timeline */
+.pd.dash3 .pd-act.alert {
+  background: #FFF8F0;
+  border-radius: 10px;
+  margin: 4px 8px;
+  padding: 10px 10px 12px;
+}
+.pd.dash3 .pd-act.alert::before {
+  background: #F0D3A6;
+}
+.pd.dash3 .pd-act.alert .pd-act-body b {
+  color: #8A4B0A;
+}
+.pd.dash3 .pd-act.alert .pd-act-body > span {
+  color: #A85C06;
+}
+.pd.dash3 .pd-act-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.pd.dash3 .pd-act-actions .btn {
+  font-size: 11.5px;
+  padding: 5px 10px;
+}
