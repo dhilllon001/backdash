@@ -6,8 +6,7 @@ export function Topbar({
   search,
   onSearchChange,
   exceptionCount,
-  exceptionsOpen,
-  onToggleExceptions,
+  onOpenExceptions,
   onAssign,
 }) {
   return (
@@ -36,12 +35,12 @@ export function Topbar({
       <div className="topbar-right">
         <div className="live">
           <i />
-          Live
+          Live · updated 12s ago
         </div>
         <button
           type="button"
-          className={`btn btn-sm btn-exc${exceptionsOpen ? ' on' : ''}`}
-          onClick={onToggleExceptions}
+          className="btn btn-sm btn-exc"
+          onClick={onOpenExceptions}
           title="View all exceptions"
         >
           <AlertTriangle size={14} strokeWidth={2.2} />

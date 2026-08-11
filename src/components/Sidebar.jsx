@@ -4,12 +4,14 @@ import {
   UserPlus,
   Truck,
   Settings,
+  AlertTriangle,
   PanelLeftClose,
   PanelLeft,
 } from 'lucide-react'
 
 const NAV = [
   { id: 'payroll', label: 'Labour & Payroll', icon: Users, badge: 4 },
+  { id: 'exceptions', label: 'Exceptions', icon: AlertTriangle, badge: 4 },
   { id: 'jobs', label: 'Jobs board', icon: LayoutGrid, badge: 7 },
   { id: 'assign', label: 'Assign work', icon: UserPlus },
   { id: 'units', label: 'By unit', icon: Truck },
@@ -17,6 +19,8 @@ const NAV = [
 ]
 
 export function Sidebar({ view, onNavigate, collapsed, onToggle }) {
+  const active = view === 'person' ? 'payroll' : view
+
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
       <div className="brand">
@@ -36,7 +40,7 @@ export function Sidebar({ view, onNavigate, collapsed, onToggle }) {
         <button
           key={id}
           type="button"
-          className={`nav-item${view === id ? ' active' : ''}`}
+          className={`nav-item${active === id ? ' active' : ''}`}
           onClick={() => onNavigate(id)}
           title={label}
         >

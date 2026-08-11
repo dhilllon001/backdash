@@ -1,25 +1,25 @@
 import { useEffect, useState } from 'react'
 import { Sidebar } from './components/Sidebar.jsx'
 import { Topbar } from './components/Topbar.jsx'
-import { ExceptionsPanel } from './components/ExceptionsPanel.jsx'
 import { AssignDrawer, PunchDrawer } from './components/Drawers.jsx'
 import { PayrollView } from './views/PayrollView.jsx'
+import { ExceptionsView } from './views/ExceptionsView.jsx'
+import { PersonDetailView } from './views/PersonDetailView.jsx'
 import { JobsView, AssignView, UnitsView, ConfigView } from './views/OtherViews.jsx'
 import { EXCEPTIONS } from './data/mock.js'
 
 export default function App() {
   const [view, setView] = useState('payroll')
+  const [personId, setPersonId] = useState(null)
   const [collapsed, setCollapsed] = useState(false)
   const [location, setLocation] = useState('all')
   const [search, setSearch] = useState('')
-  const [exceptionsOpen, setExceptionsOpen] = useState(false)
   const [assignOpen, setAssignOpen] = useState(false)
   const [punchOpen, setPunchOpen] = useState(false)
 
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') {
-        setExceptionsOpen(false)
         setAssignOpen(false)
         setPunchOpen(false)
       }
@@ -35,39 +35,43 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  const navigate = (id) => {
+    setPersonId(null)
+    setView(id)
+  }
+
+  const openPerson = (id) => {
+    setPersonId(id)
+    setView('person')
+  }
+
   const openAssign = () => {
-    setExceptionsOpen(false)
     setPunchOpen(false)
     setAssignOpen(true)
   }
 
   const openPunch = () => {
-    setExceptionsOpen(false)
     setAssignOpen(false)
     setPunchOpen(true)
   }
 
   const openExceptions = () => {
-    setAssignOpen(false)
-    setPunchOpen(false)
-    setExceptionsOpen(true)
+    setPersonId(null)
+    setView('exceptions')
   }
 
-  const handleExceptionResolve = (ex) => {
-    if (ex.action === 'punch') {
-      setExceptionsOpen(false)
-      setPunchOpen(true)
-    } else if (ex.action === 'job') {
-      setExceptionsOpen(false)
-      setView('jobs')
-    }
+  const handleExceptionAction = (ex) => {
+    if (ex.action === 'punch' || ex.action === 'note') openPunch()
+    else if (ex.action === 'job') setView('jobs')
   }
+
+  const blockingCount = EXCEPTIONS.filter((e) => e.status === 'blocking').length
 
   return (
     <div className="app">
       <Sidebar
         view={view}
-        onNavigate={setView}
+        onNavigate={navigate}
         collapsed={collapsed}
         onToggle={() => setCollapsed((v) => !v)}
       />
@@ -77,11 +81,8 @@ export default function App() {
           onLocationChange={setLocation}
           search={search}
           onSearchChange={setSearch}
-          exceptionCount={EXCEPTIONS.length}
-          exceptionsOpen={exceptionsOpen}
-          onToggleExceptions={() =>
-            exceptionsOpen ? setExceptionsOpen(false) : openExceptions()
-          }
+          exceptionCount={blockingCount}
+          onOpenExceptions={openExceptions}
           onAssign={openAssign}
         />
         <div className="content">
@@ -89,8 +90,23 @@ export default function App() {
             <PayrollView
               location={location}
               search={search}
+              onOpenPerson={openPerson}
+              onOpenExceptions={openExceptions}
+            />
+          )}
+          {view === 'person' && (
+            <PersonDetailView
+              personId={personId}
+              onBack={() => navigate('payroll')}
               onResolvePunch={openPunch}
               onOpenExceptions={openExceptions}
+            />
+          )}
+          {view === 'exceptions' && (
+            <ExceptionsView
+              location={location}
+              search={search}
+              onAction={handleExceptionAction}
             />
           )}
           {view === 'jobs' && (
@@ -104,12 +120,6 @@ export default function App() {
         </div>
       </div>
 
-      <ExceptionsPanel
-        open={exceptionsOpen}
-        exceptions={EXCEPTIONS}
-        onClose={() => setExceptionsOpen(false)}
-        onResolve={handleExceptionResolve}
-      />
       {(assignOpen || punchOpen) && (
         <div
           className={`scrim${assignOpen || punchOpen ? ' on' : ''}`}

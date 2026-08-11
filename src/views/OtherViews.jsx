@@ -1,3 +1,5 @@
+import { Fragment, useState } from 'react'
+import { ChevronRight, Search } from 'lucide-react'
 import { Chip, Kpi } from '../components/ui.jsx'
 import { JOBS, UNITS, CREW_AVAILABLE } from '../data/mock.js'
 
@@ -6,6 +8,18 @@ function matchLocSearch(text, location, search) {
   const locOk = location === 'all' || text.includes(location)
   const searchOk = !q || text.toLowerCase().includes(q)
   return locOk && searchOk
+}
+
+function PhotoThumbs({ photos, labels }) {
+  return (
+    <div className="photo-thumbs">
+      {(photos || []).map((color, i) => (
+        <div key={i} className="photo-thumb" style={{ background: color }}>
+          {labels?.[i] ? <span>{labels[i]}</span> : null}
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export function JobsView({ location, search, onAssign }) {
@@ -254,83 +268,196 @@ export function AssignView({ location, search, onAssign }) {
 }
 
 export function UnitsView({ location, search }) {
+  const [openId, setOpenId] = useState('TRL-88421')
+  const [localSearch, setLocalSearch] = useState('')
+  const q = search || localSearch
   const rows = UNITS.filter((u) =>
-    matchLocSearch(`${u.id} ${u.sub} ${u.yard}`, location, search),
+    matchLocSearch(`${u.id} ${u.sub} ${u.yard}`, location, q),
   )
 
   return (
     <section>
       <div className="page-head">
         <div>
-          <h1 className="h1">By unit</h1>
-          <div className="page-sub">Labour and material cost rolled up per tractor or trailer.</div>
+          <h1 className="h1">Work by Unit</h1>
+          <div className="page-sub">
+            Labour and materials rolled up per tractor or trailer — cost basis for chargeback, plus
+            marking status.
+          </div>
         </div>
         <div className="page-actions">
           <button type="button" className="btn">
-            Export unit report
+            Chargeback preview
           </button>
         </div>
       </div>
 
+      <div className="filter-bar">
+        <div className="search">
+          <Search size={14} strokeWidth={2.2} />
+          <input
+            type="search"
+            placeholder="Search unit #, VIN, plate…"
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+          />
+          <span className="k kbd">/</span>
+        </div>
+        <button type="button" className="fchip set">
+          Period: <b>Jul 7 – Jul 20</b>
+        </button>
+        <button type="button" className="fchip">
+          Unit type: <b>All</b>
+        </button>
+        <button type="button" className="fchip">
+          Ownership: <b>All</b>
+        </button>
+        <button type="button" className="fchip">
+          Marking status
+        </button>
+      </div>
+
       <div className="kpis five">
-        <Kpi label="Units serviced" value={String(rows.length)} sub="Trailers + tractors" />
+        <Kpi label="Units serviced" value="14" sub="9 trailers · 5 tractors" />
         <Kpi label="Labour on units" value="226" unit="h 41m" sub="88% of all job time" />
-        <Kpi label="Unattributed labour" value="33" unit="h 51m" sub="3 jobs with no unit" />
-        <Kpi label="Labour + material" value="9.4" unit="k" sub="Period total" />
-        <Kpi label="Marking compliance" value="2" sub="units missing markings" alert />
+        <Kpi
+          label="Unattributed labour"
+          value="33"
+          unit="h 51m"
+          sub={
+            <>
+              3 jobs with no unit <span className="delta down">▼ fix</span>
+            </>
+          }
+        />
+        <Kpi label="Labour + material cost" value="9.4" unit="k cad" sub="6.9k labour · 2.5k material" />
+        <Kpi label="Marking compliance" value="2" sub="units missing required markings" alert />
       </div>
 
       <div className="card">
+        <div className="card-head">
+          <div className="h3">Units — Jul 7 to Jul 20</div>
+          <span className="count-pill">{rows.length}</span>
+          <div className="spacer" />
+          <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 500 }}>
+            Sorted by labour hours
+          </span>
+        </div>
         <table>
           <thead>
             <tr>
+              <th style={{ width: 32 }} />
               <th>Unit</th>
               <th>Yard</th>
               <th className="num">Jobs</th>
+              <th>Templates</th>
               <th className="num">Labour</th>
               <th className="num">vs est</th>
               <th className="num">Material</th>
               <th className="num">Total cost</th>
               <th>Markings</th>
+              <th>Evidence</th>
+              <th>Chargeback</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((u) => (
-              <tr className="data" key={u.id}>
-                <td>
-                  <div className="cell-2l">
-                    <span className="p mono" style={{ fontSize: 12.5 }}>
-                      {u.id}
-                    </span>
-                    <span className="s">{u.sub}</span>
-                  </div>
-                </td>
-                <td>
-                  <Chip tone="neutral" xs>
-                    {u.yard}
-                  </Chip>
-                </td>
-                <td className="num">{u.jobs}</td>
-                <td className="num" style={{ fontWeight: 700 }}>
-                  {u.labour}
-                </td>
-                <td className="num">
-                  <span style={u.over ? { color: 'var(--danger)', fontWeight: 700 } : undefined}>
-                    {u.vsEst}
-                  </span>
-                </td>
-                <td className="num">{u.material}</td>
-                <td className="num" style={{ fontWeight: 700 }}>
-                  {u.total}
-                  {u.ccy ? <span className="ccy">{u.ccy}</span> : null}
-                </td>
-                <td>
-                  <Chip tone={u.marking.tone} xs>
-                    {u.marking.label}
-                  </Chip>
-                </td>
-              </tr>
-            ))}
+            {rows.map((u) => {
+              const open = openId === u.id
+              return (
+                <Fragment key={u.id}>
+                  <tr
+                    className={`data${open ? ' open-row' : ''}`}
+                    onClick={() => setOpenId(open ? null : u.id)}
+                  >
+                    <td>
+                      <span className="caret">
+                        <ChevronRight size={12} strokeWidth={2.6} />
+                      </span>
+                    </td>
+                    <td>
+                      <div className="cell-2l">
+                        <span className="p mono" style={{ fontSize: 12.5 }}>
+                          {u.id}
+                        </span>
+                        <span className="s">{u.sub}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <Chip tone="neutral" xs>
+                        {u.yard}
+                      </Chip>
+                    </td>
+                    <td className="num">{u.jobs}</td>
+                    <td>
+                      {u.templates.map((t) => (
+                        <span key={t} className="tag" style={{ marginRight: 4 }}>
+                          {t}
+                        </span>
+                      ))}
+                    </td>
+                    <td className="num" style={{ fontWeight: 700 }}>
+                      {u.labour}
+                    </td>
+                    <td className="num">
+                      <span style={u.over ? { color: 'var(--danger)', fontWeight: 700 } : undefined}>
+                        {u.vsEst}
+                      </span>
+                    </td>
+                    <td className="num">{u.material}</td>
+                    <td className="num" style={{ fontWeight: 700 }}>
+                      {u.total}
+                      {u.ccy ? <span className="ccy">{u.ccy}</span> : null}
+                    </td>
+                    <td>
+                      <Chip tone={u.marking.tone} xs>
+                        {u.marking.label}
+                      </Chip>
+                    </td>
+                    <td>
+                      <span className="mono" style={{ fontSize: 12 }}>
+                        {u.evidence}
+                      </span>
+                    </td>
+                    <td>
+                      <Chip tone="neutral" xs>
+                        {u.chargeback}
+                      </Chip>
+                    </td>
+                  </tr>
+                  {open && u.history?.length > 0 ? (
+                    <tr className="detail-row">
+                      <td colSpan={12}>
+                        <div className="unit-history">
+                          <div className="dsec-title">Job history on {u.id}</div>
+                          {u.history.map((job) => (
+                            <div className="unit-job-card" key={job.id}>
+                              <div className="unit-job-main">
+                                <div className="person" style={{ gap: 10 }}>
+                                  <span className="mj-id">{job.id}</span>
+                                  <span className="tag">{job.tag}</span>
+                                  <Chip tone={job.status.tone} xs>
+                                    {job.status.label}
+                                  </Chip>
+                                </div>
+                                <div style={{ fontWeight: 700, marginTop: 6 }}>{job.title}</div>
+                                <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>
+                                  {job.person} ·{' '}
+                                  <span style={job.over ? { color: 'var(--danger)', fontWeight: 700 } : undefined}>
+                                    {job.actual}
+                                  </span>{' '}
+                                  / {job.est} est
+                                </div>
+                              </div>
+                              <PhotoThumbs photos={job.photos} labels={job.labels} />
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ) : null}
+                </Fragment>
+              )
+            })}
           </tbody>
         </table>
       </div>
