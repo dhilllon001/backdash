@@ -1,20 +1,20 @@
 import {
-  Users,
+  LayoutDashboard,
   LayoutGrid,
-  UserPlus,
-  Truck,
   Settings,
-  AlertTriangle,
+  BookOpen,
+  Package,
+  Activity,
   PanelLeftClose,
   PanelLeft,
 } from 'lucide-react'
 
 const NAV = [
-  { id: 'payroll', label: 'Labour & Payroll', icon: Users, badge: 4 },
-  { id: 'exceptions', label: 'Exceptions', icon: AlertTriangle, badge: 4 },
-  { id: 'jobs', label: 'Jobs board', icon: LayoutGrid, badge: 7 },
-  { id: 'assign', label: 'Assign work', icon: UserPlus },
-  { id: 'units', label: 'By unit', icon: Truck },
+  { id: 'payroll', label: 'Dashboard', icon: LayoutDashboard, badge: 4 },
+  { id: 'jobs', label: 'Reporting', icon: LayoutGrid, badge: 7 },
+  { id: 'inventory', label: 'Inventory', icon: Package },
+  { id: 'activity', label: 'Activity log', icon: Activity },
+  { id: 'styleguide', label: 'Style guide', icon: BookOpen },
   { id: 'config', label: 'Configuration', icon: Settings },
 ]
 

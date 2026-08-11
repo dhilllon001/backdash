@@ -36,41 +36,27 @@ export function ExceptionsView({ location, search, onAction }) {
 
   return (
     <section>
-      <div className="page-head">
-        <div>
-          <h1 className="h1">Exceptions</h1>
-          <div className="page-sub">
-            Everything that has to be fixed before a timesheet can be approved. Clear the blocking
-            list first.
-          </div>
+      <div className="tabs-card">
+        <div className="svtabs">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={`svtab${tab === t.id ? ' on' : ''}`}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}{' '}
+              <span
+                className={`cnt${t.id === 'blocking' ? ' dang' : t.id === 'review' ? ' warn' : ''}`}
+              >
+                {counts[t.id]}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="svtabs" style={{ marginBottom: 14 }}>
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            className={`svtab${tab === t.id ? ' on' : ''}`}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}{' '}
-            <span className={`cnt${t.id === 'blocking' ? ' dang' : t.id === 'review' ? ' warn' : ''}`}>
-              {counts[t.id]}
-            </span>
-          </button>
-        ))}
-      </div>
-
       <div className="card">
-        {tab === 'blocking' && (
-          <div className="section-label dang">Blocking</div>
-        )}
-        {tab === 'review' && (
-          <div className="section-label warn">Needs review — does not block approval</div>
-        )}
-        {tab === 'resolved' && <div className="section-label">Resolved</div>}
-
         <table>
           <thead>
             <tr>
@@ -78,75 +64,51 @@ export function ExceptionsView({ location, search, onAction }) {
               <th>Employee</th>
               <th>Day</th>
               <th>What happened</th>
-              <th className="num">Hours at risk</th>
+              <th>Location</th>
               <th style={{ width: 140 }} />
             </tr>
           </thead>
           <tbody>
             {filtered.map((ex) => (
-              <tr key={ex.id} className="data" style={{ cursor: 'default' }}>
-                <td>
-                  <Chip tone={ex.severity}>{ex.type}</Chip>
-                </td>
-                <td>
-                  <div className="person">
-                    <div className="pav" style={{ background: ex.bg, color: ex.color }}>
-                      {ex.initials}
-                    </div>
-                    <div className="cell-2l">
-                      <span className="p">{ex.person}</span>
-                      <span className="s">{ex.empId}</span>
-                    </div>
-                  </div>
-                </td>
+              <tr key={ex.id} className="data">
                 <td>
                   <div className="cell-2l">
-                    <span className="p" style={{ fontWeight: 600 }}>
-                      {ex.day}
-                    </span>
-                    <span className="s">
-                      {ex.dayNote || ex.location}
-                    </span>
+                    <span className="p">{ex.type}</span>
+                    <span className="s">{ex.id}</span>
                   </div>
                 </td>
-                <td style={{ whiteSpace: 'normal', maxWidth: 360, fontWeight: 500 }}>
-                  {ex.detail}
-                </td>
-                <td className="num" style={{ fontWeight: 700 }}>
-                  {ex.hoursAtRisk}
+                <td>{ex.person}</td>
+                <td>{ex.day}</td>
+                <td style={{ maxWidth: 320 }}>
+                  <span style={{ fontSize: 12.5, color: 'var(--text-2)', fontWeight: 500 }}>
+                    {ex.detail}
+                  </span>
                 </td>
                 <td>
-                  {ex.action ? (
-                    <button
-                      type="button"
-                      className={`btn btn-sm${ex.action === 'punch' ? ' btn-primary' : ''}`}
-                      onClick={() => onAction?.(ex)}
-                    >
-                      {ex.actionLabel}
-                    </button>
-                  ) : (
-                    <button type="button" className="btn btn-sm btn-ghost">
-                      {ex.actionLabel}
-                    </button>
-                  )}
+                  <Chip tone="neutral" xs>
+                    {ex.location}
+                  </Chip>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    onClick={() => onAction?.(ex)}
+                  >
+                    {ex.actionLabel || 'Resolve'}
+                  </button>
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && (
+            {filtered.length === 0 ? (
               <tr>
                 <td colSpan={6} style={{ textAlign: 'center', padding: 28, color: 'var(--text-3)' }}>
-                  No exceptions in this tab.
+                  Nothing in this list.
                 </td>
               </tr>
-            )}
+            ) : null}
           </tbody>
         </table>
-        <div className="tbl-foot">
-          <span className="rc">
-            {counts.blocking} blocking · {counts.review} to review · every fix is written to the
-            audit trail with a reason code.
-          </span>
-        </div>
       </div>
     </section>
   )

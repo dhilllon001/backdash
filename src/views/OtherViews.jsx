@@ -1,133 +1,24 @@
-import { Fragment, useState } from 'react'
-import { ChevronRight, Search } from 'lucide-react'
-import { Chip, Kpi } from '../components/ui.jsx'
+import { Fragment, useMemo, useState } from 'react'
+import {
+  ChevronRight,
+  Search,
+  X,
+  Plus,
+  AlertTriangle,
+} from 'lucide-react'
+import { Chip, Kpi, PhotoThumbs } from '../components/ui.jsx'
 import { JOBS, UNITS, CREW_AVAILABLE } from '../data/mock.js'
+import {
+  INSTALL_TEMPLATES,
+  EQUIPMENT_TYPES,
+  equipmentLabel,
+} from '../data/templates.js'
 
 function matchLocSearch(text, location, search) {
   const q = search.trim().toLowerCase()
   const locOk = location === 'all' || text.includes(location)
   const searchOk = !q || text.toLowerCase().includes(q)
   return locOk && searchOk
-}
-
-function PhotoThumbs({ photos, labels }) {
-  return (
-    <div className="photo-thumbs">
-      {(photos || []).map((color, i) => (
-        <div key={i} className="photo-thumb" style={{ background: color }}>
-          {labels?.[i] ? <span>{labels[i]}</span> : null}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-export function JobsView({ location, search, onAssign }) {
-  const rows = JOBS.filter((j) =>
-    matchLocSearch(`${j.id} ${j.title} ${j.unit} ${j.yard} ${j.assignee || ''}`, location, search),
-  )
-
-  return (
-    <section>
-      <div className="page-head">
-        <div>
-          <h1 className="h1">Jobs board</h1>
-          <div className="page-sub">Track open work, evidence, and blockers across the crew.</div>
-        </div>
-        <div className="page-actions">
-          <button type="button" className="btn" onClick={onAssign}>
-            Assign work
-          </button>
-          <button type="button" className="btn btn-primary">
-            + New job
-          </button>
-        </div>
-      </div>
-
-      <div className="kpis five">
-        <Kpi label="Open jobs" value={String(rows.length)} sub="Assigned + in progress" />
-        <Kpi label="Unassigned" value="3" sub="Oldest waiting 3d 4h" />
-        <Kpi label="Blocked" value="2" sub="Waiting on vinyl stock" alert />
-        <Kpi label="Awaiting review" value="5" sub="Office sign-off" />
-        <Kpi label="First-time-right" value="91" unit="%" sub="2 rework this period" />
-      </div>
-
-      <div className="card">
-        <table>
-          <thead>
-            <tr>
-              <th>Job</th>
-              <th>Unit</th>
-              <th>Yard</th>
-              <th>Assigned to</th>
-              <th>Status</th>
-              <th className="num">Age</th>
-              <th className="num">Actual / est</th>
-              <th>Priority</th>
-              <th style={{ width: 100 }} />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((job) => (
-              <tr className="data" key={job.id}>
-                <td>
-                  <div className="cell-2l">
-                    <span className="p mono" style={{ fontSize: 12.5 }}>
-                      {job.id}
-                    </span>
-                    <span className="s">
-                      {job.title} · <span className="tag">{job.tag}</span>
-                    </span>
-                  </div>
-                </td>
-                <td>
-                  <span className="mono">{job.unit}</span>
-                </td>
-                <td>
-                  <Chip tone="neutral" xs>
-                    {job.yard}
-                  </Chip>
-                </td>
-                <td>
-                  {job.assignee || (
-                    <span style={{ color: 'var(--danger)', fontWeight: 700 }}>Unassigned</span>
-                  )}
-                </td>
-                <td>
-                  <Chip tone={job.status.tone}>{job.status.label}</Chip>
-                </td>
-                <td className="num">{job.age}</td>
-                <td className="num">
-                  {job.actual ? (
-                    <>
-                      <span style={job.over ? { color: 'var(--danger)', fontWeight: 700 } : undefined}>
-                        {job.actual}
-                      </span>{' '}
-                      <span style={{ color: 'var(--text-4)' }}>/{job.est}</span>
-                    </>
-                  ) : (
-                    <span style={{ color: 'var(--text-4)' }}>— /{job.est}</span>
-                  )}
-                </td>
-                <td>
-                  <Chip tone={job.priority.tone} xs>
-                    {job.priority.label}
-                  </Chip>
-                </td>
-                <td>
-                  {!job.assignee ? (
-                    <button type="button" className="btn btn-sm btn-primary" onClick={onAssign}>
-                      Assign
-                    </button>
-                  ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  )
 }
 
 export function AssignView({ location, search, onAssign }) {
@@ -142,12 +33,8 @@ export function AssignView({ location, search, onAssign }) {
 
   return (
     <section>
-      <div className="page-head">
-        <div>
-          <h1 className="h1">Assign work</h1>
-          <div className="page-sub">Match open jobs to available crew members.</div>
-        </div>
-        <div className="page-actions">
+      <div className="page-toolbar">
+        <div className="page-actions" style={{ marginLeft: 0 }}>
           <button type="button" className="btn btn-primary" onClick={onAssign}>
             + Assign job
           </button>
@@ -277,15 +164,8 @@ export function UnitsView({ location, search }) {
 
   return (
     <section>
-      <div className="page-head">
-        <div>
-          <h1 className="h1">Work by Unit</h1>
-          <div className="page-sub">
-            Labour and materials rolled up per tractor or trailer — cost basis for chargeback, plus
-            marking status.
-          </div>
-        </div>
-        <div className="page-actions">
+      <div className="page-toolbar">
+        <div className="page-actions" style={{ marginLeft: 0 }}>
           <button type="button" className="btn">
             Chargeback preview
           </button>
@@ -448,7 +328,7 @@ export function UnitsView({ location, search }) {
                                   / {job.est} est
                                 </div>
                               </div>
-                              <PhotoThumbs photos={job.photos} labels={job.labels} />
+                              <PhotoThumbs photos={job.photos} />
                             </div>
                           ))}
                         </div>
@@ -466,79 +346,481 @@ export function UnitsView({ location, search }) {
 }
 
 export function ConfigView() {
+  const [templates, setTemplates] = useState(INSTALL_TEMPLATES)
+  const [unitType, setUnitType] = useState('trailer')
+  const [equipment, setEquipment] = useState('all')
+  const [query, setQuery] = useState('')
+  const [selectedId, setSelectedId] = useState(
+    () => INSTALL_TEMPLATES.find((t) => t.type === 'trailer')?.id,
+  )
+  const [addOpen, setAddOpen] = useState(false)
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return templates.filter((t) => {
+      if (t.type !== unitType) return false
+      if (equipment !== 'all' && t.equipment !== equipment) return false
+      if (!q) return true
+      const hay = [
+        t.code,
+        t.name,
+        t.company,
+        t.country,
+        t.equipment,
+        equipmentLabel(t.type, t.equipment),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      return hay.includes(q)
+    })
+  }, [templates, unitType, equipment, query])
+
+  const selected =
+    filtered.find((t) => t.id === selectedId) || filtered[0] || templates[0]
+
+  const switchUnit = (next) => {
+    setQuery('')
+    setUnitType(next)
+    setEquipment('all')
+    const first = templates.find((t) => t.type === next)
+    if (first) setSelectedId(first.id)
+  }
+
+  const itemCount = selected?.sections?.reduce((n, s) => n + s.items.length, 0) || 0
+  const equipOptions = EQUIPMENT_TYPES[unitType] || []
+
+  const handleAdd = (form) => {
+    const id = `tpl-${Date.now().toString(36)}`
+    const tpl = {
+      id,
+      type: form.type,
+      equipment: form.equipment,
+      country: form.country,
+      company: form.company.trim() || 'Charger Logistics',
+      unitLabel: form.type === 'truck' ? 'Truck' : 'Trailer',
+      usDot: null,
+      code: form.code.trim() || `${form.type === 'truck' ? 'TRK' : 'TRL'}-NEW`,
+      name: form.name.trim(),
+      status: 'active',
+      estMinutes: Number(form.estMinutes) || 180,
+      summary: form.summary.trim() || 'Custom installation template.',
+      photoPolicy: {
+        beforeRequired: true,
+        afterRequired: true,
+        afterEachSection: true,
+        note: '',
+      },
+      sections: [
+        {
+          id: 'main',
+          title: 'Install markings',
+          photoAfter: true,
+          items: form.items
+            .split('\n')
+            .map((s) => s.trim())
+            .filter(Boolean),
+        },
+      ],
+    }
+    if (!tpl.sections[0].items.length) {
+      tpl.sections[0].items = ['Company logo', 'Unit number']
+    }
+    setTemplates((list) => [tpl, ...list])
+    setUnitType(tpl.type)
+    setEquipment('all')
+    setSelectedId(id)
+    setAddOpen(false)
+  }
+
+  if (!selected) return null
+
   return (
-    <section>
-      <div className="page-head">
-        <div>
-          <h1 className="h1">Configuration</h1>
-          <div className="page-sub">Job templates, yards, pay rules, and approvals.</div>
-        </div>
-        <div className="page-actions">
-          <button type="button" className="btn btn-primary">
-            + Add template
+    <section className="cfg">
+      <div className="cfg-toolbar">
+        <div className="cfg-toolbar-right" style={{ marginLeft: 'auto' }}>
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => setAddOpen(true)}>
+            <Plus size={14} /> Add template
           </button>
         </div>
       </div>
 
-      <div className="assign-grid">
-        <div className="card" style={{ padding: 16 }}>
-          <div className="h3" style={{ marginBottom: 12 }}>
-            Job templates
+      <div className="cfg-shell">
+        <aside className="cfg-list">
+          <div className="side-tabs" role="tablist" aria-label="Unit type">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={unitType === 'trailer'}
+              className={unitType === 'trailer' ? 'on' : ''}
+              onClick={() => switchUnit('trailer')}
+            >
+              Trailer
+              <em>{templates.filter((t) => t.type === 'trailer').length}</em>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={unitType === 'truck'}
+              className={unitType === 'truck' ? 'on' : ''}
+              onClick={() => switchUnit('truck')}
+            >
+              Truck
+              <em>{templates.filter((t) => t.type === 'truck').length}</em>
+            </button>
           </div>
-          {[
-            ['DEC-WRAP', 'Partial wrap', '5 steps · 180 min'],
-            ['DEC-INST', 'Decal install', '5 steps · 150 min'],
-            ['DEC-REP', 'Decal repair', '4 steps · 90 min'],
-            ['DEC-PRT', 'Decal print', '3 steps · 60 min'],
-          ].map(([code, name, meta]) => (
-            <div
-              key={code}
-              style={{
-                border: '1px solid var(--border)',
-                borderRadius: 10,
-                padding: '10px 12px',
-                marginBottom: 8,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
+
+          <div className="cfg-list-tools">
+            <label className="cfg-filter">
+              <Search size={14} />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Filter by company, code…"
+                aria-label="Filter templates"
+              />
+            </label>
+            <select
+              className="cfg-equip-select"
+              value={equipment}
+              aria-label="Equipment type"
+              onChange={(e) => {
+                const next = e.target.value
+                setEquipment(next)
+                const first = templates.find(
+                  (t) =>
+                    t.type === unitType &&
+                    (next === 'all' || t.equipment === next),
+                )
+                if (first) setSelectedId(first.id)
               }}
             >
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700 }}>{name}</div>
-                <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 2 }}>
-                  <span className="tag">{code}</span> · {meta}
-                </div>
+              <option value="all">All equipment</option>
+              {equipOptions.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="side-table-wrap">
+            <table className="side-table">
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Equipment</th>
+                  <th>Code</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((t) => (
+                  <tr
+                    key={t.id}
+                    className={selected?.id === t.id ? 'on' : ''}
+                    onClick={() => setSelectedId(t.id)}
+                    aria-selected={selected?.id === t.id}
+                  >
+                    <td className="side-name">{t.company}</td>
+                    <td className="side-meta">
+                      {equipmentLabel(t.type, t.equipment)} · {t.country}
+                    </td>
+                    <td className="side-code mono">{t.code}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filtered.length === 0 ? (
+              <div className="cfg-list-empty">No templates match this filter.</div>
+            ) : null}
+          </div>
+        </aside>
+
+        <div className="cfg-detail card">
+          <div className="cfg-hero">
+            <div className="cfg-hero-main">
+              <div className="cfg-hero-kicker">
+                <span className="mono">{selected.code}</span>
+                <span className="cfg-hero-dot">·</span>
+                <span>{selected.company}</span>
+                <span className="cfg-hero-dot">·</span>
+                <span>{selected.unitLabel}</span>
               </div>
-              <Chip tone="ok" xs>
-                Active
-              </Chip>
+              <h2>{selected.name}</h2>
+              <p>{selected.summary}</p>
             </div>
-          ))}
-        </div>
-        <div className="card" style={{ padding: 16 }}>
-          <div className="h3" style={{ marginBottom: 12 }}>
-            Yards
+            <div className="cfg-hero-tags">
+              <span className="cfg-chip">{selected.country}</span>
+              <span className="cfg-chip accent">
+                {equipmentLabel(selected.type, selected.equipment)}
+              </span>
+              <span className="cfg-chip ok">Active</span>
+            </div>
           </div>
-          {[
-            ['Brampton Yard', 'Ontario, Canada · EDT'],
-            ['Laredo Yard', 'Texas, USA · CDT'],
-            ['Nuevo Laredo', 'Tamaulipas, MX · CST'],
-          ].map(([name, meta]) => (
-            <div
-              key={name}
-              style={{
-                border: '1px solid var(--border)',
-                borderRadius: 10,
-                padding: '10px 12px',
-                marginBottom: 8,
-              }}
-            >
-              <div style={{ fontWeight: 700 }}>{name}</div>
-              <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 2 }}>{meta}</div>
+
+          <div className="cfg-stats">
+            <div className="cfg-stat">
+              <span>Est. time</span>
+              <b>
+                {Math.floor(selected.estMinutes / 60)}h {selected.estMinutes % 60}m
+              </b>
             </div>
-          ))}
+            <div className="cfg-stat">
+              <span>Sections</span>
+              <b>{selected.sections.length}</b>
+            </div>
+            <div className="cfg-stat">
+              <span>Checklist total</span>
+              <b>{itemCount}</b>
+            </div>
+            <div className="cfg-stat">
+              <span>Photo rules</span>
+              <b>
+                {[
+                  selected.photoPolicy.beforeRequired,
+                  selected.photoPolicy.afterEachSection,
+                  selected.photoPolicy.afterRequired,
+                ].filter(Boolean).length}
+              </b>
+            </div>
+          </div>
+
+          {(() => {
+            const alerts = []
+            if (!selected.usDot) {
+              alerts.push({
+                tone: selected.country === 'USA' ? 'warn' : 'info',
+                title: 'No USDOT on template',
+                text:
+                  selected.country === 'USA'
+                    ? 'USA units should include a USDOT number before install work starts.'
+                    : 'Add a USDOT number if this unit will operate into the US.',
+              })
+            }
+            if (
+              !selected.photoPolicy?.beforeRequired ||
+              !selected.photoPolicy?.afterRequired
+            ) {
+              alerts.push({
+                tone: 'warn',
+                title: 'Incomplete photo policy',
+                text: 'Before and final after photos should both be required for install verification.',
+              })
+            }
+            if (itemCount === 0) {
+              alerts.push({
+                tone: 'warn',
+                title: 'Empty checklist',
+                text: 'This template has no checklist items yet.',
+              })
+            }
+            if (!alerts.length) return null
+            return (
+              <div className="cfg-alerts">
+                {alerts.map((a) => (
+                  <div key={a.title} className={`cfg-alert ${a.tone}`}>
+                    <AlertTriangle size={15} />
+                    <div>
+                      <b>{a.title}</b>
+                      <p>{a.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
+
+          <div className="cfg-body">
+            <section className="cfg-block">
+              <div className="cfg-block-head">
+                <h3>Photo requirements</h3>
+              </div>
+              <ul className="cfg-rules">
+                {selected.photoPolicy.beforeRequired ? (
+                  <li>
+                    <span className="cfg-rule-label">Before</span>
+                    Take photos before any install work starts
+                  </li>
+                ) : null}
+                {selected.photoPolicy.afterEachSection ? (
+                  <li>
+                    <span className="cfg-rule-label">Section</span>
+                    Take photos after each checklist section
+                  </li>
+                ) : null}
+                {selected.photoPolicy.afterRequired ? (
+                  <li>
+                    <span className="cfg-rule-label">Final</span>
+                    Take after photos when the job is complete
+                  </li>
+                ) : null}
+              </ul>
+            </section>
+
+            <section className="cfg-block">
+              <div className="cfg-block-head">
+                <h3>Checklist</h3>
+                <span className="cfg-block-count">
+                  {itemCount} items · {selected.sections.length} sections
+                </span>
+              </div>
+              <div className="cfg-checklist">
+                {selected.sections.map((section, idx) => (
+                  <div className="cfg-section" key={section.id}>
+                    <div className="cfg-section-head">
+                      <div className="cfg-section-title">
+                        <span className="cfg-section-num">{idx + 1}</span>
+                        <b>{section.title}</b>
+                      </div>
+                      <div className="cfg-section-meta">
+                        <span>{section.items.length} items</span>
+                        {section.photoAfter ? (
+                          <span className="cfg-photo-req">Photo after</span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <ul className="cfg-checks">
+                      {section.items.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
         </div>
       </div>
+
+      {addOpen ? (
+        <AddTemplateModal
+          defaultType={unitType}
+          onClose={() => setAddOpen(false)}
+          onSave={handleAdd}
+        />
+      ) : null}
     </section>
+  )
+}
+
+function AddTemplateModal({ defaultType, onClose, onSave }) {
+  const [form, setForm] = useState({
+    type: defaultType || 'trailer',
+    equipment: defaultType === 'truck' ? 'highway' : 'dry-van',
+    country: 'Canada',
+    company: 'Charger Logistics',
+    code: '',
+    name: '',
+    estMinutes: '180',
+    summary: '',
+    items: 'Charger Logistics Logo\nUnit number',
+  })
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
+  const equip = EQUIPMENT_TYPES[form.type] || []
+  const valid = form.name.trim().length > 1
+
+  return (
+    <div className="apple-scrim on" onClick={onClose}>
+      <div className="apple-modal inv-modal on" onClick={(e) => e.stopPropagation()}>
+        <div className="dw-head">
+          <div>
+            <div className="dw-title">Add template</div>
+          </div>
+          <button type="button" className="dw-x" onClick={onClose} aria-label="Close">
+            <X size={16} />
+          </button>
+        </div>
+        <div className="dw-body">
+          <div className="inv-two">
+            <label className="fld">
+              <span>Unit</span>
+              <select
+                value={form.type}
+                onChange={(e) => {
+                  const type = e.target.value
+                  set('type', type)
+                  set('equipment', type === 'truck' ? 'highway' : 'dry-van')
+                }}
+              >
+                <option value="trailer">Trailer</option>
+                <option value="truck">Truck</option>
+              </select>
+            </label>
+            <label className="fld">
+              <span>Equipment</span>
+              <select value={form.equipment} onChange={(e) => set('equipment', e.target.value)}>
+                {equip.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="inv-two">
+            <label className="fld">
+              <span>Country</span>
+              <select value={form.country} onChange={(e) => set('country', e.target.value)}>
+                <option>Canada</option>
+                <option>USA</option>
+                <option>Mexico</option>
+              </select>
+            </label>
+            <label className="fld">
+              <span>Company</span>
+              <input value={form.company} onChange={(e) => set('company', e.target.value)} />
+            </label>
+          </div>
+          <div className="inv-two">
+            <label className="fld">
+              <span>Code</span>
+              <input
+                value={form.code}
+                onChange={(e) => set('code', e.target.value)}
+                placeholder="TRL-DRY-CA"
+              />
+            </label>
+            <label className="fld">
+              <span>Est. minutes</span>
+              <input value={form.estMinutes} onChange={(e) => set('estMinutes', e.target.value)} />
+            </label>
+          </div>
+          <label className="fld">
+            <span>Template name</span>
+            <input
+              value={form.name}
+              onChange={(e) => set('name', e.target.value)}
+              placeholder="Dry van installation — Canada"
+              autoFocus
+            />
+          </label>
+          <label className="fld">
+            <span>Summary</span>
+            <input value={form.summary} onChange={(e) => set('summary', e.target.value)} />
+          </label>
+          <label className="fld">
+            <span>Checklist items (one per line)</span>
+            <textarea
+              className="cfg-add-ta"
+              rows={5}
+              value={form.items}
+              onChange={(e) => set('items', e.target.value)}
+            />
+          </label>
+        </div>
+        <div className="dw-foot" style={{ justifyContent: 'flex-end' }}>
+          <button type="button" className="btn btn-ghost" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={!valid}
+            onClick={() => onSave(form)}
+          >
+            Create template
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }

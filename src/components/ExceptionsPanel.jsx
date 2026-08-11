@@ -22,7 +22,11 @@ export function ExceptionsPanel({ open, exceptions, onClose, onResolve }) {
   return (
     <>
       <div className={`scrim${open ? ' on' : ''}`} onClick={onClose} />
-      <aside className={`drawer exc-panel${open ? ' on' : ''}`} role="dialog" aria-label="Exceptions">
+      <aside
+        className={`drawer exc-panel from-right${open ? ' on' : ''}`}
+        role="dialog"
+        aria-label="Exceptions"
+      >
         <div className="dw-head">
           <div>
             <div className="h3" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -37,6 +41,7 @@ export function ExceptionsPanel({ open, exceptions, onClose, onResolve }) {
             <X size={14} />
           </button>
         </div>
+
         <div className="dw-body">
           <div className="exc-filters">
             {FILTERS.map((f) => (
@@ -71,13 +76,17 @@ export function ExceptionsPanel({ open, exceptions, onClose, onResolve }) {
                   </div>
                 </div>
                 <Chip tone={ex.severity} xs>
-                  {ex.severity === 'dang' ? 'Blocking' : 'Review'}
+                  {ex.severity === 'dang' ? 'Blocking' : ex.status === 'resolved' ? 'Resolved' : 'Review'}
                 </Chip>
               </div>
               <div className="exc-item-body">{ex.detail}</div>
               <div className="exc-item-meta" style={{ marginTop: 8 }}>
-                {ex.when}
+                {ex.day}
+                {ex.hoursAtRisk && ex.hoursAtRisk !== '—' ? ` · ${ex.hoursAtRisk} at risk` : ''}
               </div>
+              {ex.actionLabel ? (
+                <div className="exc-item-cta">{ex.actionLabel} →</div>
+              ) : null}
             </div>
           ))}
 
@@ -87,6 +96,7 @@ export function ExceptionsPanel({ open, exceptions, onClose, onResolve }) {
             </div>
           )}
         </div>
+
         <div className="dw-foot">
           <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-3)' }}>
             Clear blockers before payroll export

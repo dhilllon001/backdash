@@ -1,27 +1,41 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Sidebar } from './components/Sidebar.jsx'
 import { Topbar } from './components/Topbar.jsx'
-import { AssignDrawer, PunchDrawer } from './components/Drawers.jsx'
+import { AssignDrawer } from './components/Drawers.jsx'
+import { CreateJobDrawer } from './components/CreateJobDrawer.jsx'
+import { ExceptionsPanel } from './components/ExceptionsPanel.jsx'
+import { ApproveTimesheetModal, PunchResolveModal } from './components/WorkflowModals.jsx'
 import { PayrollView } from './views/PayrollView.jsx'
-import { ExceptionsView } from './views/ExceptionsView.jsx'
 import { PersonDetailView } from './views/PersonDetailView.jsx'
-import { JobsView, AssignView, UnitsView, ConfigView } from './views/OtherViews.jsx'
-import { EXCEPTIONS } from './data/mock.js'
+import { JobsView } from './views/JobsView.jsx'
+import { ConfigView } from './views/OtherViews.jsx'
+import { StyleGuideView } from './views/StyleGuideView.jsx'
+import { InventoryView } from './views/InventoryView.jsx'
+import { ActivityLogView } from './views/ActivityLogView.jsx'
+import { useActivity } from './context/ActivityContext.jsx'
+import { EMPLOYEES, EXCEPTIONS } from './data/mock.js'
 
 export default function App() {
+  const { logActivity } = useActivity()
   const [view, setView] = useState('payroll')
   const [personId, setPersonId] = useState(null)
   const [collapsed, setCollapsed] = useState(false)
-  const [location, setLocation] = useState('all')
+  const [location, setLocation] = useState('Brampton')
+  const [departments, setDepartments] = useState(['decals'])
   const [search, setSearch] = useState('')
+  const [employees, setEmployees] = useState(EMPLOYEES)
   const [assignOpen, setAssignOpen] = useState(false)
-  const [punchOpen, setPunchOpen] = useState(false)
+  const [createJobOpen, setCreateJobOpen] = useState(false)
+  const [excOpen, setExcOpen] = useState(false)
+  const [workflow, setWorkflow] = useState(null) // { type: 'punch'|'approve', employeeId }
 
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') {
         setAssignOpen(false)
-        setPunchOpen(false)
+        setCreateJobOpen(false)
+        setExcOpen(false)
+        setWorkflow(null)
       }
       if (
         e.key === '/' &&
@@ -37,35 +51,149 @@ export default function App() {
 
   const navigate = (id) => {
     setPersonId(null)
+    setExcOpen(false)
     setView(id)
   }
 
   const openPerson = (id) => {
     setPersonId(id)
+    setExcOpen(false)
     setView('person')
   }
 
   const openAssign = () => {
-    setPunchOpen(false)
+    setWorkflow(null)
+    setExcOpen(false)
+    setCreateJobOpen(false)
     setAssignOpen(true)
   }
 
-  const openPunch = () => {
+  const openCreateJob = () => {
     setAssignOpen(false)
-    setPunchOpen(true)
+    setWorkflow(null)
+    setExcOpen(false)
+    setCreateJobOpen(true)
   }
 
-  const openExceptions = () => {
-    setPersonId(null)
-    setView('exceptions')
+  const openExceptionsPanel = () => {
+    setAssignOpen(false)
+    setCreateJobOpen(false)
+    setWorkflow(null)
+    setExcOpen(true)
+  }
+
+  const emp = useMemo(
+    () => (personId ? employees.find((e) => e.id === personId) : null),
+    [employees, personId],
+  )
+
+  const workflowEmp = useMemo(
+    () => (workflow ? employees.find((e) => e.id === workflow.employeeId) : null),
+    [employees, workflow],
+  )
+
+  const openPunch = (employeeId) => {
+    const id = employeeId || personId || employees.find((e) => e.status?.tone === 'dang')?.id
+    if (!id) return
+    setAssignOpen(false)
+    setCreateJobOpen(false)
+    setExcOpen(false)
+    setWorkflow({ type: 'punch', employeeId: id })
+  }
+
+  const openApprove = (employeeId) => {
+    const id = employeeId || personId
+    if (!id) return
+    const target = employees.find((e) => e.id === id)
+    if (!target) return
+    // Blocked / open punch → resolve punch first
+    if (target.status?.tone === 'dang' || /punch/i.test(target.status?.label || '')) {
+      setWorkflow({ type: 'punch', employeeId: id })
+      return
+    }
+    setAssignOpen(false)
+    setCreateJobOpen(false)
+    setExcOpen(false)
+    setWorkflow({ type: 'approve', employeeId: id })
   }
 
   const handleExceptionAction = (ex) => {
-    if (ex.action === 'punch' || ex.action === 'note') openPunch()
-    else if (ex.action === 'job') setView('jobs')
+    setExcOpen(false)
+    if (ex.action === 'punch' || ex.action === 'note') {
+      const match =
+        employees.find((e) => e.name === ex.person) ||
+        employees.find((e) => e.status?.tone === 'dang')
+      openPunch(match?.id)
+    } else if (ex.action === 'job') setView('jobs')
+  }
+
+  const savePunchResolve = (payload) => {
+    if (!workflowEmp) return
+    setEmployees((list) =>
+      list.map((e) =>
+        e.id === workflowEmp.id
+          ? {
+              ...e,
+              status: { tone: 'info', label: 'Ready' },
+              canApprove: true,
+            }
+          : e,
+      ),
+    )
+    logActivity({
+      area: 'punch',
+      action: 'punch_out',
+      title: 'Resolved missed punch-out',
+      detail: `${workflowEmp.name} · ${payload.date} · punch-out ${payload.time} · ${payload.reason}${
+        payload.note ? ` · ${payload.note}` : ''
+      }`,
+      meta: { person: workflowEmp.name, hours: payload.hours },
+    })
+    setWorkflow(null)
+  }
+
+  const saveApprove = (payload) => {
+    if (!workflowEmp) return
+    const when = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+    setEmployees((list) =>
+      list.map((e) =>
+        e.id === workflowEmp.id
+          ? {
+              ...e,
+              status: { tone: 'ok', label: 'Approved' },
+              canApprove: false,
+              approvedBy: `A. Singh · ${when}`,
+              otApproved: payload.approveOt,
+            }
+          : e,
+      ),
+    )
+    if (payload.approveOt && workflowEmp.ot) {
+      logActivity({
+        area: 'payroll',
+        action: 'approve_ot',
+        title: 'Approved timesheet with OT',
+        detail: `${workflowEmp.name} · OT ${workflowEmp.ot} approved · period Jul 7 – 20${
+          payload.otNote ? ` · ${payload.otNote}` : ''
+        }`,
+        meta: { person: workflowEmp.name, ot: workflowEmp.ot },
+      })
+    } else {
+      logActivity({
+        area: 'payroll',
+        action: 'approve',
+        title: 'Approved timesheet',
+        detail: `${workflowEmp.name} · ${
+          workflowEmp.ot && !payload.approveOt ? `OT ${workflowEmp.ot} excluded` : 'OT none'
+        } · period Jul 7 – 20${payload.periodNote ? ` · ${payload.periodNote}` : ''}`,
+        meta: { person: workflowEmp.name, otApproved: false },
+      })
+    }
+    setWorkflow(null)
   }
 
   const blockingCount = EXCEPTIONS.filter((e) => e.status === 'blocking').length
+  const needsPunch = emp?.status?.tone === 'dang' || /punch/i.test(emp?.status?.label || '')
 
   return (
     <div className="app">
@@ -77,60 +205,93 @@ export default function App() {
       />
       <div className="main">
         <Topbar
+          mode={view === 'person' ? 'person' : 'default'}
+          showLocation={view === 'payroll'}
           location={location}
           onLocationChange={setLocation}
+          departments={departments}
+          onDepartmentsChange={setDepartments}
           search={search}
           onSearchChange={setSearch}
           exceptionCount={blockingCount}
-          onOpenExceptions={openExceptions}
-          onAssign={openAssign}
+          onOpenExceptions={openExceptionsPanel}
+          onCreateJob={openCreateJob}
+          onBack={() => navigate('payroll')}
+          personLabel={emp?.role?.match(/EMP-\d+/)?.[0] || emp?.id}
+          canApprove={!!emp?.canApprove}
+          needsPunch={needsPunch}
+          onResolvePunch={() => openPunch(emp?.id)}
+          onApprove={() => openApprove(emp?.id)}
         />
         <div className="content">
           {view === 'payroll' && (
             <PayrollView
+              employees={employees}
               location={location}
               search={search}
+              departments={departments}
               onOpenPerson={openPerson}
-              onOpenExceptions={openExceptions}
+              onApprove={(id) => openApprove(id)}
+              onResolvePunch={(id) => openPunch(id)}
             />
           )}
           {view === 'person' && (
             <PersonDetailView
               personId={personId}
-              onBack={() => navigate('payroll')}
-              onResolvePunch={openPunch}
-              onOpenExceptions={openExceptions}
+              employee={emp}
+              onResolvePunch={() => openPunch(personId)}
             />
           )}
-          {view === 'exceptions' && (
-            <ExceptionsView
-              location={location}
-              search={search}
-              onAction={handleExceptionAction}
-            />
-          )}
-          {view === 'jobs' && (
-            <JobsView location={location} search={search} onAssign={openAssign} />
-          )}
-          {view === 'assign' && (
-            <AssignView location={location} search={search} onAssign={openAssign} />
-          )}
-          {view === 'units' && <UnitsView location={location} search={search} />}
+          {view === 'jobs' && <JobsView />}
+          {view === 'inventory' && <InventoryView />}
+          {view === 'activity' && <ActivityLogView />}
+          {view === 'styleguide' && <StyleGuideView />}
           {view === 'config' && <ConfigView />}
         </div>
       </div>
 
-      {(assignOpen || punchOpen) && (
-        <div
-          className={`scrim${assignOpen || punchOpen ? ' on' : ''}`}
-          onClick={() => {
-            setAssignOpen(false)
-            setPunchOpen(false)
+      {assignOpen && (
+        <div className="scrim on" onClick={() => setAssignOpen(false)} />
+      )}
+      {assignOpen ? <AssignDrawer open onClose={() => setAssignOpen(false)} /> : null}
+      {createJobOpen ? (
+        <CreateJobDrawer
+          open
+          onClose={() => setCreateJobOpen(false)}
+          onCreated={(job) => {
+            logActivity({
+              area: 'jobs',
+              action: 'create_job',
+              title: 'Created job',
+              detail: `${job?.id || 'New job'}${job?.title ? ` · ${job.title}` : ''}${
+                job?.unit ? ` · ${job.unit}` : ''
+              }`,
+            })
           }}
         />
-      )}
-      <AssignDrawer open={assignOpen} onClose={() => setAssignOpen(false)} />
-      <PunchDrawer open={punchOpen} onClose={() => setPunchOpen(false)} />
+      ) : null}
+
+      {workflow?.type === 'punch' && workflowEmp ? (
+        <PunchResolveModal
+          employee={workflowEmp}
+          onClose={() => setWorkflow(null)}
+          onSave={savePunchResolve}
+        />
+      ) : null}
+      {workflow?.type === 'approve' && workflowEmp ? (
+        <ApproveTimesheetModal
+          employee={workflowEmp}
+          onClose={() => setWorkflow(null)}
+          onSave={saveApprove}
+        />
+      ) : null}
+
+      <ExceptionsPanel
+        open={excOpen}
+        exceptions={EXCEPTIONS.filter((e) => e.status !== 'resolved')}
+        onClose={() => setExcOpen(false)}
+        onResolve={handleExceptionAction}
+      />
     </div>
   )
 }

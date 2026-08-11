@@ -19,3 +19,41 @@ export function Kpi({ label, value, unit, sub, alert }) {
     </div>
   )
 }
+
+/** Normalize photo entries: string URL, hex color, or { src, label }. */
+export function PhotoThumbs({ photos, labels }) {
+  const items = (photos || []).map((p, i) => {
+    if (typeof p === 'string') {
+      const isUrl = p.startsWith('/') || p.startsWith('http') || p.startsWith('data:')
+      return isUrl
+        ? { src: p, label: labels?.[i] }
+        : { color: p, label: labels?.[i] }
+    }
+    return { src: p.src, color: p.color, label: p.label || labels?.[i] }
+  })
+
+  return (
+    <div className="photo-thumbs">
+      {items.map((item, i) => (
+        <div
+          key={i}
+          className="photo-thumb"
+          style={item.src ? undefined : { background: item.color || '#c5ced9' }}
+        >
+          {item.src ? <img src={item.src} alt={item.label || `Photo ${i + 1}`} /> : null}
+          {item.label ? <span>{item.label}</span> : null}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** Format 24h "HH:MM" → "h:mm AM/PM" for cleaner ledger display. */
+export function formatClock(t) {
+  if (!t) return '—'
+  const [hh, mm] = t.split(':').map(Number)
+  if (Number.isNaN(hh)) return t
+  const period = hh >= 12 ? 'PM' : 'AM'
+  const h12 = hh % 12 || 12
+  return `${h12}:${String(mm).padStart(2, '0')} ${period}`
+}
