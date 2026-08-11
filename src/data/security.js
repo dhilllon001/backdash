@@ -246,12 +246,12 @@ export const SECURITY_PEOPLE = [
 ]
 
 const PH = {
-  plate: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=480&h=320&fit=crop',
+  plate: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=640&h=420&fit=crop',
   id: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=480&h=320&fit=crop',
   badge: 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=480&h=320&fit=crop',
-  gate: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=480&h=320&fit=crop',
-  truck: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=480&h=320&fit=crop',
-  dock: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=480&h=320&fit=crop',
+  gate: 'https://images.unsplash.com/photo-1578575437130-595fccf4d4e1?w=640&h=420&fit=crop',
+  truck: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=640&h=420&fit=crop',
+  dock: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=640&h=420&fit=crop',
 }
 
 export const VISITORS = [
@@ -500,10 +500,14 @@ export const SEC_YARD_SHIFT_TASKS = {
 
 /** Person shift ledger for detail view — mirrors Decals PERSON_SHIFTS shape (Jul 7–20 2026). */
 const SEC_SHIFT_PH = {
-  gate: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=480&h=320&fit=crop',
-  fence: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=480&h=320&fit=crop',
-  camera: 'https://images.unsplash.com/photo-1557597774-9d271bf494de?w=480&h=320&fit=crop',
+  gate: 'https://images.unsplash.com/photo-1578575437130-595fccf4d4e1?w=640&h=420&fit=crop',
+  fence: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=640&h=420&fit=crop',
+  camera: 'https://images.unsplash.com/photo-1494412574643-ff11b5a2ec63?w=640&h=420&fit=crop',
   badge: 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=480&h=320&fit=crop',
+  damage: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=640&h=420&fit=crop',
+  trailer: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=640&h=420&fit=crop',
+  truck: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=640&h=420&fit=crop',
+  yard: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=640&h=420&fit=crop',
 }
 
 function secJob(id, title, unit, start, end, opts = {}) {
@@ -511,24 +515,32 @@ function secJob(id, title, unit, start, end, opts = {}) {
   const photoSet =
     kind === 'fence'
       ? [
-          { label: 'Fence line', src: SEC_SHIFT_PH.fence, ago: opts.ago || '3h ago' },
-          { label: 'Damage log', src: SEC_SHIFT_PH.fence, ago: '2h ago' },
+          { label: 'Yard fence', src: SEC_SHIFT_PH.fence, ago: opts.ago || '3h ago' },
+          { label: 'Damage report', src: SEC_SHIFT_PH.damage, ago: '2h ago' },
+          { label: 'Perimeter', src: SEC_SHIFT_PH.yard, ago: '2h ago' },
         ]
       : kind === 'camera'
         ? [
-            { label: 'Camera feed', src: SEC_SHIFT_PH.camera, ago: opts.ago || '2h ago' },
-            { label: 'NVR status', src: SEC_SHIFT_PH.camera, ago: '1h ago' },
+            { label: 'Yard overview', src: SEC_SHIFT_PH.yard, ago: opts.ago || '2h ago' },
+            { label: 'Truck lane', src: SEC_SHIFT_PH.truck, ago: '1h ago' },
           ]
         : kind === 'visitor'
           ? [
-              { label: 'Gate entry', src: SEC_SHIFT_PH.gate, ago: opts.ago || '45m ago' },
+              { label: 'Gate check', src: SEC_SHIFT_PH.gate, ago: opts.ago || '45m ago' },
               { label: 'Visitor badge', src: SEC_SHIFT_PH.badge, ago: '40m ago' },
-              { label: 'ID scan', src: PH.id, ago: '42m ago' },
+              { label: 'Trailer plate', src: SEC_SHIFT_PH.trailer, ago: '42m ago' },
             ]
-          : [
-              { label: 'Gate check', src: SEC_SHIFT_PH.gate, ago: opts.ago || '1h ago' },
-              { label: 'Badge log', src: SEC_SHIFT_PH.badge, ago: '55m ago' },
-            ]
+          : kind === 'trailer'
+            ? [
+                { label: 'Trailer row', src: SEC_SHIFT_PH.trailer, ago: opts.ago || '1h ago' },
+                { label: 'Yard check', src: SEC_SHIFT_PH.yard, ago: '50m ago' },
+                { label: 'Damage note', src: SEC_SHIFT_PH.damage, ago: '48m ago' },
+              ]
+            : [
+                { label: 'Gate check', src: SEC_SHIFT_PH.gate, ago: opts.ago || '1h ago' },
+                { label: 'Truck entry', src: SEC_SHIFT_PH.truck, ago: '55m ago' },
+                { label: 'Yard bay', src: SEC_SHIFT_PH.yard, ago: '50m ago' },
+              ]
   return {
     id,
     title,

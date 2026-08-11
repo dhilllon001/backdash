@@ -17,7 +17,6 @@ import { WorkspaceDashboard } from './views/WorkspaceDashboard.jsx'
 import { SecurityDashboard } from './views/security/SecurityDashboard.jsx'
 import { VisitorsView } from './views/security/VisitorsView.jsx'
 import { SecurityConfigView } from './views/security/SecurityConfigView.jsx'
-import { SecurityAssignmentsView } from './views/security/SecurityAssignmentsView.jsx'
 import { SecurityReportingView } from './views/security/SecurityReportingView.jsx'
 import { useActivity } from './context/ActivityContext.jsx'
 import { EMPLOYEES, EXCEPTIONS } from './data/mock.js'
@@ -342,6 +341,7 @@ export default function App() {
               employee={emp}
               onResolvePunch={() => openPunch(personId)}
               loadShifts={getSecurityShifts}
+              variant="security"
             />
           )}
           {view === 'jobs' && isDecals && <JobsView />}
@@ -350,7 +350,6 @@ export default function App() {
             <WorkspaceDashboard workspaceId={workspaceId} />
           )}
           {view === 'visitors' && isSecurity && <VisitorsView />}
-          {view === 'assignments' && isSecurity && <SecurityAssignmentsView />}
           {view === 'inventory' && isDecals && <InventoryView />}
           {view === 'activity' && <ActivityLogView />}
           {view === 'styleguide' && isDecals && <StyleGuideView />}

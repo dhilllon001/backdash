@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   MapPin,
+  AlertTriangle,
   Upload,
   Clock3,
   Pencil,
@@ -46,8 +47,9 @@ function toMin(t) {
   return h * 60 + m
 }
 
-function buildActivity(shift) {
+function buildActivity(shift, opts = {}) {
   if (!shift || shift.dayOff) return []
+  const security = opts.security
   const events = []
   if (shift.in) {
     events.push({
@@ -55,7 +57,9 @@ function buildActivity(shift) {
       time: shift.in,
       tone: 'ok',
       title: 'Clocked in',
-      detail: `Badge scan · ${shift.yard} yard`,
+      detail: security
+        ? `Badge scan · ${shift.yard} gate`
+        : `Badge scan · ${shift.yard} yard`,
     })
   }
   ;(shift.jobs || []).forEach((j, idx) => {
@@ -64,7 +68,7 @@ function buildActivity(shift) {
         id: `${j.id}-start`,
         time: j.start,
         tone: 'ok',
-        title: `started ${j.title}`,
+        title: security ? `started ${j.title}` : `started ${j.title}`,
         detail: `${j.id} · ${j.unit}`,
       })
     }
@@ -73,17 +77,30 @@ function buildActivity(shift) {
         id: `${j.id}-end`,
         time: j.end,
         tone: 'ok',
-        title: `finished ${j.title}`,
+        title: security ? `checkpoint cleared · ${j.title}` : `finished ${j.title}`,
         detail: `${j.actual || '—'} · ${j.status?.label || 'Done'}`,
       })
-    } else if (j.start && idx === 0) {
+    } else if (j.start) {
       events.push({
-        id: `${j.id}-pause`,
+        id: `${j.id}-open`,
         time: j.start,
         tone: 'warn',
-        title: `paused Waiting on materials`,
-        detail: `${j.id} · still open`,
+        title: security ? `Checkpoint open · ${j.title}` : `paused Waiting on materials`,
+        detail: security
+          ? `${j.id} · still open · missing close-out`
+          : `${j.id} · still open`,
         soft: true,
+        alert: security,
+      })
+    }
+    if (security && (j.damage || /damage|hazard/i.test(j.title || ''))) {
+      events.push({
+        id: `${j.id}-damage`,
+        time: j.end || j.start || shift.in,
+        tone: 'warn',
+        title: 'Damage / hazard reported',
+        detail: `${j.id} · photo evidence attached`,
+        alert: true,
       })
     }
   })
@@ -95,6 +112,19 @@ function buildActivity(shift) {
       title: 'Break',
       detail: `${shift.breakMin} min unpaid meal`,
     })
+  }
+  if (security && !(shift.jobs || []).some((j) => /visitor/i.test(j.title || ''))) {
+    const t = shift.out || shift.exception?.time || '14:30'
+    if (!shift.dayOff) {
+      events.push({
+        id: 'miss-visitor',
+        time: t,
+        tone: 'warn',
+        title: 'Visitor log not reconciled',
+        detail: 'Checkpoint skipped · reconcile badges vs visitor list',
+        alert: true,
+      })
+    }
   }
   if (shift.open) {
     events.push({
@@ -160,7 +190,14 @@ function EditPunchForm({ punchIn, punchOut, onSave, onCancel }) {
   )
 }
 
-export function PersonDetailView({ personId, employee, onResolvePunch, loadShifts }) {
+export function PersonDetailView({
+  personId,
+  employee,
+  onResolvePunch,
+  loadShifts,
+  variant = 'decals',
+}) {
+  const isSecurity = variant === 'security'
   const emp = employee || getEmployee(personId) || getEmployee('d1')
   const baseShifts = loadShifts ? loadShifts(emp.id) : getPersonShifts(emp.id)
 
@@ -221,7 +258,10 @@ export function PersonDetailView({ personId, employee, onResolvePunch, loadShift
   const [selectedId, setSelectedId] = useState(worked[0]?.id || ledger[0]?.id)
   const selected = ledger.find((s) => s.id === selectedId) || ledger[0]
   const photos = useMemo(() => collectPhotos(selected?.jobs), [selected])
-  const activity = useMemo(() => buildActivity(selected), [selected])
+  const activity = useMemo(
+    () => buildActivity(selected, { security: isSecurity }),
+    [selected, isSecurity],
+  )
   const done = jobsDoneCount(worked)
   const jobsTotal = totalJobs(worked)
   const primaryJob = selected?.jobs?.[0]
@@ -617,7 +657,7 @@ export function PersonDetailView({ personId, employee, onResolvePunch, loadShift
                 <div className="pd-tabs">
                   {[
                     ['overview', 'Overview'],
-                    ['jobs', 'Jobs'],
+                    ['jobs', isSecurity ? 'Tasks' : 'Jobs'],
                     ['shift', 'Punches'],
                     ['location', 'Location'],
                     ['pay', 'Pay codes'],
@@ -638,15 +678,75 @@ export function PersonDetailView({ personId, employee, onResolvePunch, loadShift
 
                 {tab === 'overview' ? (
                   <div className="pd-overview-stack">
+                    {(selected.open ||
+                      (selected.jobs || []).some((j) => !j.end) ||
+                      activity.some((ev) => ev.alert)) && (
+                      <div className="pd-alert-bar">
+                        <AlertTriangle size={15} />
+                        <div className="pd-alert-copy">
+                          <b>
+                            {selected.open
+                              ? 'Punch-out missing'
+                              : (selected.jobs || []).some((j) => !j.end)
+                                ? isSecurity
+                                  ? 'Open checkpoint on this shift'
+                                  : 'Open job on this shift'
+                                : 'Review needed'}
+                          </b>
+                          <span>
+                            {[
+                              selected.open ? 'No clock-out recorded' : null,
+                              (selected.jobs || []).some((j) => !j.end)
+                                ? isSecurity
+                                  ? 'At least one checkpoint is still open'
+                                  : 'At least one job is still in progress'
+                                : null,
+                              !photos.length
+                                ? isSecurity
+                                  ? 'Inspection photos incomplete'
+                                  : 'No photos uploaded yet'
+                                : null,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </span>
+                        </div>
+                        {selected.open ? (
+                          <div className="pd-warn-actions">
+                            <button
+                              type="button"
+                              className="btn btn-sm"
+                              onClick={() => setEditing(true)}
+                            >
+                              Add time
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-primary"
+                              onClick={() =>
+                                onResolvePunch
+                                  ? onResolvePunch()
+                                  : savePunch({ in: selected.in, out: '15:56' })
+                              }
+                            >
+                              Use {formatClock(selected.exception?.time || '15:56')}
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
+
                     <div className="pd-overview-grid">
                       <div className="pd-overview-main">
-                        <section className="pd-block">
-                          <div className="pd-sec-title">Photos</div>
+                        <section className="pd-block pd-block-photos">
+                          <div className="pd-sec-title sticky">
+                            {isSecurity ? 'Inspection photos' : 'Photos'}
+                          </div>
                           <div className="pd-photo-grid">
                             {photos.map((p, i) => (
                               <figure
                                 key={`${p.jobId}-${i}`}
-                                className="pd-photo"
+                                className={`pd-photo${/damage|hazard|issue/i.test(p.label || '') ? ' flag' : ''}`}
                                 data-tip={`${p.jobId} · ${p.label} · ${p.ago}`}
                               >
                                 <div className="pd-photo-head">
@@ -669,8 +769,16 @@ export function PersonDetailView({ personId, employee, onResolvePunch, loadShift
                             {selected.open ? (
                               <div className="pd-photo pd-photo-need">
                                 <Camera size={22} />
-                                <b>After photo required</b>
-                                <span>Capture when the wrap is complete</span>
+                                <b>
+                                  {isSecurity
+                                    ? 'Gate exit photo required'
+                                    : 'After photo required'}
+                                </b>
+                                <span>
+                                  {isSecurity
+                                    ? 'Capture yard / gate check when closing the shift'
+                                    : 'Capture when the wrap is complete'}
+                                </span>
                               </div>
                             ) : null}
                             {!photos.length && !selected.open ? (
@@ -680,7 +788,9 @@ export function PersonDetailView({ personId, employee, onResolvePunch, loadShift
                         </section>
 
                         <section className="pd-block">
-                          <div className="pd-sec-title">Jobs on this shift</div>
+                          <div className="pd-sec-title">
+                            {isSecurity ? 'Tasks on this shift' : 'Jobs on this shift'}
+                          </div>
                           <div className="pd-job-rows">
                             {(selected.jobs || []).map((j) => (
                               <div

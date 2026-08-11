@@ -8,7 +8,6 @@ import {
   PanelLeftClose,
   PanelLeft,
   Users,
-  UserCheck,
 } from 'lucide-react'
 
 const DECALS_NAV = [
@@ -23,7 +22,6 @@ const DECALS_NAV = [
 const SECURITY_NAV = [
   { id: 'payroll', label: 'Dashboard', icon: LayoutDashboard, badge: 3 },
   { id: 'visitors', label: 'Visitors', icon: Users, badge: 6 },
-  { id: 'assignments', label: 'Assignments', icon: UserCheck },
   { id: 'jobs', label: 'Reporting', icon: LayoutGrid },
   { id: 'config', label: 'Configuration', icon: Settings },
   { id: 'activity', label: 'Activity log', icon: Activity },
