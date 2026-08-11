@@ -436,6 +436,11 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                   key={s.id}
                   className={`pd-shift-card${selectedId === s.id ? ' on' : ''}${s.dayOff ? ' day-off' : ''}${s.open ? ' is-open' : ''}`}
                   onClick={() => selectDay(s.id)}
+                  data-tip={
+                    s.dayOff
+                      ? `${s.day} · Day off`
+                      : `${s.day} · ${formatClock(s.in)} → ${s.open ? 'open' : formatClock(s.out)} · ${s.totalHours || s.hoursLabel}`
+                  }
                 >
                   <div className="pd-shift-top">
                     <span className="pd-shift-day">{s.day}</span>
@@ -618,72 +623,180 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
 
                 {tab === 'overview' ? (
                   <div className="pd-overview-stack">
-                    <section className="pd-block">
-                      <div className="pd-sec-title">Photos</div>
-                      <div className="pd-photo-grid">
-                        {photos.map((p, i) => (
-                          <figure key={`${p.jobId}-${i}`} className="pd-photo">
-                            <div className="pd-photo-head">
-                              <span>
-                                {p.jobId} {p.title}
-                              </span>
-                              {p.status ? (
-                                <Chip tone={p.status.tone} xs>
-                                  {p.status.label}
-                                </Chip>
-                              ) : null}
-                            </div>
-                            <img src={p.src} alt={p.label} />
-                            <figcaption>
-                              <span>{String(p.label).toUpperCase()}</span>
-                              <span>{p.ago}</span>
-                            </figcaption>
-                          </figure>
-                        ))}
+                    {(selected.open ||
+                      !selected.out ||
+                      (selected.jobs || []).some((j) => !j.end) ||
+                      !photos.length) && (
+                      <div className="pd-alert-bar">
+                        <AlertTriangle size={15} />
+                        <div className="pd-alert-copy">
+                          <b>
+                            {selected.open
+                              ? 'Punch-out missing'
+                              : (selected.jobs || []).some((j) => !j.end)
+                                ? 'Open job on this shift'
+                                : 'Review needed'}
+                          </b>
+                          <span>
+                            {[
+                              selected.open ? 'No clock-out recorded' : null,
+                              (selected.jobs || []).some((j) => !j.end)
+                                ? 'At least one job is still in progress'
+                                : null,
+                              !photos.length ? 'No photos uploaded yet' : null,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </span>
+                        </div>
                         {selected.open ? (
-                          <div className="pd-photo pd-photo-need">
-                            <Camera size={22} />
-                            <b>After photo required</b>
-                            <span>Capture when the wrap is complete</span>
+                          <div className="pd-warn-actions">
+                            <button
+                              type="button"
+                              className="btn btn-sm"
+                              onClick={() => setEditing(true)}
+                            >
+                              Enter manually
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-primary"
+                              onClick={() =>
+                                onResolvePunch
+                                  ? onResolvePunch()
+                                  : savePunch({ in: selected.in, out: '15:56' })
+                              }
+                            >
+                              Use 3:56 PM
+                            </button>
                           </div>
                         ) : null}
-                        {!photos.length && !selected.open ? (
-                          <div className="pd-empty">No photos for this day.</div>
-                        ) : null}
                       </div>
-                    </section>
+                    )}
 
-                    <section className="pd-block">
-                      <div className="pd-sec-title">Jobs on this shift</div>
-                      <div className="pd-job-rows">
-                        {(selected.jobs || []).map((j) => (
-                          <div className="pd-job-row" key={j.id}>
-                            <div className="pd-job-row-main">
-                              <span className="mono">{j.id}</span>
-                              <b>
-                                {j.title} · {j.unit}
-                              </b>
-                              <Chip tone={j.status.tone} xs>
-                                {j.status.label}
-                              </Chip>
-                            </div>
-                            <div className="pd-job-row-tl">
-                              <span className="num">
-                                {j.start ? formatClock(j.start) : '—'} →{' '}
-                                {j.end ? formatClock(j.end) : 'open'}
-                              </span>
-                              <div className="pd-job-bar">
-                                <i style={{ width: j.end ? '72%' : '48%' }} />
+                    <div className="pd-overview-grid">
+                      <div className="pd-overview-main">
+                        <section className="pd-block">
+                          <div className="pd-sec-title">Photos</div>
+                          <div className="pd-photo-grid">
+                            {photos.map((p, i) => (
+                              <figure
+                                key={`${p.jobId}-${i}`}
+                                className="pd-photo"
+                                data-tip={`${p.jobId} · ${p.label} · ${p.ago}`}
+                              >
+                                <div className="pd-photo-head">
+                                  <span>
+                                    {p.jobId} {p.title}
+                                  </span>
+                                  {p.status ? (
+                                    <Chip tone={p.status.tone} xs>
+                                      {p.status.label}
+                                    </Chip>
+                                  ) : null}
+                                </div>
+                                <img src={p.src} alt={p.label} />
+                                <figcaption>
+                                  <span>{String(p.label).toUpperCase()}</span>
+                                  <span>{p.ago}</span>
+                                </figcaption>
+                              </figure>
+                            ))}
+                            {selected.open ? (
+                              <div className="pd-photo pd-photo-need">
+                                <Camera size={22} />
+                                <b>After photo required</b>
+                                <span>Capture when the wrap is complete</span>
                               </div>
-                              <span className="num pd-job-dur">{j.actual}</span>
-                            </div>
+                            ) : null}
+                            {!photos.length && !selected.open ? (
+                              <div className="pd-empty">No photos for this day.</div>
+                            ) : null}
                           </div>
-                        ))}
-                        {!selected.jobs?.length ? (
-                          <div className="pd-empty">No jobs on this day.</div>
-                        ) : null}
+                        </section>
+
+                        <section className="pd-block">
+                          <div className="pd-sec-title">Jobs on this shift</div>
+                          <div className="pd-job-rows">
+                            {(selected.jobs || []).map((j) => (
+                              <div
+                                className="pd-job-row"
+                                key={j.id}
+                                data-tip={`${j.id} · ${j.start || '—'} → ${j.end || 'open'} · ${j.actual}`}
+                              >
+                                <div className="pd-job-row-main">
+                                  <span className="mono">{j.id}</span>
+                                  <b>
+                                    {j.title} · {j.unit}
+                                  </b>
+                                  <Chip tone={j.status.tone} xs>
+                                    {j.status.label}
+                                  </Chip>
+                                </div>
+                                <div className="pd-job-row-tl">
+                                  <span className="num">
+                                    {j.start ? formatClock(j.start) : '—'} →{' '}
+                                    {j.end ? formatClock(j.end) : 'open'}
+                                  </span>
+                                  <div className="pd-job-bar">
+                                    <i style={{ width: j.end ? '72%' : '48%' }} />
+                                  </div>
+                                  <span className="num pd-job-dur">{j.actual}</span>
+                                </div>
+                              </div>
+                            ))}
+                            {!selected.jobs?.length ? (
+                              <div className="pd-empty">No jobs on this day.</div>
+                            ) : null}
+                          </div>
+                        </section>
                       </div>
-                    </section>
+
+                      <aside className="pd-overview-activity">
+                        <div className="pd-activity-head">
+                          <span>Punch &amp; activity</span>
+                          <em>{activity.length} events</em>
+                        </div>
+                        <div className="pd-activity-list">
+                          {activity.map((ev) => (
+                            <div
+                              key={ev.id}
+                              className={`pd-act${ev.tone === 'warn' ? ' warn' : ''}${ev.tone === 'muted' ? ' muted' : ''}${ev.alert ? ' alert' : ''}`}
+                              data-tip={`${formatClock(ev.time)} · ${ev.title} · ${ev.detail}`}
+                            >
+                              <span className="pd-act-time num">{formatClock(ev.time)}</span>
+                              <span className={`pd-act-dot ${ev.tone}`} />
+                              <div className="pd-act-body">
+                                <b>{ev.title}</b>
+                                <span>{ev.detail}</span>
+                              </div>
+                            </div>
+                          ))}
+                          {selected.open ? (
+                            <div className="pd-act-note">
+                              <AlertTriangle size={14} />
+                              <div>
+                                <b>Punch-out missing</b>
+                                <span>
+                                  Unbooked time will appear once the shift is closed. Gate exit
+                                  suggested {formatClock(selected.exception?.time || '15:56')}.
+                                </span>
+                              </div>
+                            </div>
+                          ) : null}
+                          {clockLoc ? (
+                            <button
+                              type="button"
+                              className="pd-act-map"
+                              onClick={() => showOnMap(clockLoc.id)}
+                            >
+                              <MapPin size={13} />
+                              Show clock-in on map
+                            </button>
+                          ) : null}
+                        </div>
+                      </aside>
+                    </div>
                   </div>
                 ) : null}
 
@@ -897,7 +1010,7 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
           </div>
         </div>
 
-        <aside className="pd-activity">
+        <aside className="pd-activity pd-activity-rail">
           <div className="pd-activity-head">
             <span>Punch &amp; activity</span>
             <em>{activity.length} events</em>
@@ -910,6 +1023,7 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                 <div
                   key={ev.id}
                   className={`pd-act${ev.tone === 'warn' ? ' warn' : ''}${ev.tone === 'muted' ? ' muted' : ''}${ev.alert ? ' alert' : ''}`}
+                  data-tip={`${formatClock(ev.time)} · ${ev.title}`}
                 >
                   <span className="pd-act-time num">{formatClock(ev.time)}</span>
                   <span className={`pd-act-dot ${ev.tone}`} />
