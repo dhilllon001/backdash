@@ -14,8 +14,15 @@ import { InventoryView } from './views/InventoryView.jsx'
 import { ActivityLogView } from './views/ActivityLogView.jsx'
 import { HomeView } from './views/HomeView.jsx'
 import { WorkspaceDashboard } from './views/WorkspaceDashboard.jsx'
+import { SecurityDashboard } from './views/security/SecurityDashboard.jsx'
+import { SecurityPersonDetail } from './views/security/SecurityPersonDetail.jsx'
+import { VisitorsView } from './views/security/VisitorsView.jsx'
+import { SecurityConfigView } from './views/security/SecurityConfigView.jsx'
+import { SecurityAssignmentsView } from './views/security/SecurityAssignmentsView.jsx'
+import { SecurityReportingView } from './views/security/SecurityReportingView.jsx'
 import { useActivity } from './context/ActivityContext.jsx'
 import { EMPLOYEES, EXCEPTIONS } from './data/mock.js'
+import { SECURITY_PEOPLE, getSecurityPerson } from './data/security.js'
 import { getWorkspace } from './data/workspaces.js'
 
 export default function App() {
@@ -27,6 +34,7 @@ export default function App() {
   const [location, setLocation] = useState('Brampton')
   const [search, setSearch] = useState('')
   const [employees, setEmployees] = useState(EMPLOYEES)
+  const [securityPeople, setSecurityPeople] = useState(SECURITY_PEOPLE)
   const [assignOpen, setAssignOpen] = useState(false)
   const [createJobOpen, setCreateJobOpen] = useState(false)
   const [createJobPerson, setCreateJobPerson] = useState(null)
@@ -36,6 +44,7 @@ export default function App() {
 
   const workspace = getWorkspace(workspaceId)
   const isDecals = workspaceId === 'decals'
+  const isSecurity = workspaceId === 'security'
   const onHome = () => {
     setWorkspaceId(null)
     setPersonId(null)
@@ -140,18 +149,27 @@ export default function App() {
     setExcOpen(true)
   }
 
-  const emp = useMemo(
-    () => (personId ? employees.find((e) => e.id === personId) : null),
-    [employees, personId],
-  )
+  const emp = useMemo(() => {
+    if (!personId) return null
+    if (isSecurity) return securityPeople.find((e) => e.id === personId) || getSecurityPerson(personId)
+    return employees.find((e) => e.id === personId) || null
+  }, [personId, isSecurity, securityPeople, employees])
 
-  const workflowEmp = useMemo(
-    () => (workflow ? employees.find((e) => e.id === workflow.employeeId) : null),
-    [employees, workflow],
-  )
+  const workflowEmp = useMemo(() => {
+    if (!workflow) return null
+    if (isSecurity) {
+      return (
+        securityPeople.find((e) => e.id === workflow.employeeId) ||
+        getSecurityPerson(workflow.employeeId)
+      )
+    }
+    return employees.find((e) => e.id === workflow.employeeId) || null
+  }, [workflow, isSecurity, securityPeople, employees])
 
   const openPunch = (employeeId) => {
-    const id = employeeId || personId || employees.find((e) => e.status?.tone === 'dang')?.id
+    const pool = isSecurity ? securityPeople : employees
+    const id =
+      employeeId || personId || pool.find((e) => e.status?.tone === 'dang')?.id
     if (!id) return
     setAssignOpen(false)
     setCreateJobOpen(false)
@@ -162,9 +180,9 @@ export default function App() {
   const openApprove = (employeeId) => {
     const id = employeeId || personId
     if (!id) return
-    const target = employees.find((e) => e.id === id)
+    const pool = isSecurity ? securityPeople : employees
+    const target = pool.find((e) => e.id === id)
     if (!target) return
-    // Blocked / open punch → resolve punch first
     if (target.status?.tone === 'dang' || /punch/i.test(target.status?.label || '')) {
       setWorkflow({ type: 'punch', employeeId: id })
       return
@@ -185,19 +203,20 @@ export default function App() {
     } else if (ex.action === 'job') setView('jobs')
   }
 
+  const patchPersonStatus = (id, patch) => {
+    if (isSecurity) {
+      setSecurityPeople((list) => list.map((e) => (e.id === id ? { ...e, ...patch } : e)))
+    } else {
+      setEmployees((list) => list.map((e) => (e.id === id ? { ...e, ...patch } : e)))
+    }
+  }
+
   const savePunchResolve = (payload) => {
     if (!workflowEmp) return
-    setEmployees((list) =>
-      list.map((e) =>
-        e.id === workflowEmp.id
-          ? {
-              ...e,
-              status: { tone: 'info', label: 'Waiting for approval' },
-              canApprove: true,
-            }
-          : e,
-      ),
-    )
+    patchPersonStatus(workflowEmp.id, {
+      status: { tone: 'info', label: 'Waiting for approval' },
+      canApprove: true,
+    })
     logActivity({
       area: 'punch',
       action: 'punch_out',
@@ -213,19 +232,12 @@ export default function App() {
   const saveApprove = (payload) => {
     if (!workflowEmp) return
     const when = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-    setEmployees((list) =>
-      list.map((e) =>
-        e.id === workflowEmp.id
-          ? {
-              ...e,
-              status: { tone: 'ok', label: 'Approved' },
-              canApprove: false,
-              approvedBy: `A. Singh · ${when}`,
-              otApproved: payload.approveOt,
-            }
-          : e,
-      ),
-    )
+    patchPersonStatus(workflowEmp.id, {
+      status: { tone: 'ok', label: 'Approved' },
+      canApprove: false,
+      approvedBy: `A. Singh · ${when}`,
+      otApproved: payload.approveOt,
+    })
     if (payload.approveOt && workflowEmp.ot) {
       logActivity({
         area: 'payroll',
@@ -266,12 +278,12 @@ export default function App() {
         onToggle={() => setCollapsed((v) => !v)}
         workspaceLabel={workspace?.label || 'Decals'}
         onHome={onHome}
-        isDecals={isDecals}
+        workspaceId={workspaceId}
       />
       <div className="main">
         <Topbar
-          mode={view === 'person' && isDecals ? 'person' : 'default'}
-          showLocation={view === 'payroll'}
+          mode={view === 'person' && (isDecals || isSecurity) ? 'person' : 'default'}
+          showLocation={view === 'payroll' && (isDecals || isSecurity)}
           location={location}
           onLocationChange={setLocation}
           search={search}
@@ -287,7 +299,7 @@ export default function App() {
           onShare={sharePersonTimesheet}
           onBack={() => navigate('payroll')}
           personName={emp?.name}
-          personLabel={emp?.role?.match(/EMP-\d+/)?.[0] || emp?.id}
+          personLabel={emp?.role?.match(/(EMP|SEC)-\d+/)?.[0] || emp?.id}
           personMeta="Pay period Jul 7 – 20"
           canApprove={!!emp?.canApprove}
           needsPunch={needsPunch}
@@ -305,7 +317,17 @@ export default function App() {
               onResolvePunch={(id) => openPunch(id)}
             />
           )}
-          {view === 'payroll' && !isDecals && (
+          {view === 'payroll' && isSecurity && (
+            <SecurityDashboard
+              employees={securityPeople}
+              location={location}
+              search={search}
+              onOpenPerson={openPerson}
+              onApprove={(id) => openApprove(id)}
+              onResolvePunch={(id) => openPunch(id)}
+            />
+          )}
+          {view === 'payroll' && !isDecals && !isSecurity && (
             <WorkspaceDashboard workspaceId={workspaceId} />
           )}
           {view === 'person' && isDecals && (
@@ -315,14 +337,25 @@ export default function App() {
               onResolvePunch={() => openPunch(personId)}
             />
           )}
+          {view === 'person' && isSecurity && (
+            <SecurityPersonDetail
+              personId={personId}
+              employee={emp}
+              onResolvePunch={() => openPunch(personId)}
+            />
+          )}
           {view === 'jobs' && isDecals && <JobsView />}
-          {view === 'jobs' && !isDecals && (
+          {view === 'jobs' && isSecurity && <SecurityReportingView />}
+          {view === 'jobs' && !isDecals && !isSecurity && (
             <WorkspaceDashboard workspaceId={workspaceId} />
           )}
+          {view === 'visitors' && isSecurity && <VisitorsView />}
+          {view === 'assignments' && isSecurity && <SecurityAssignmentsView />}
           {view === 'inventory' && isDecals && <InventoryView />}
           {view === 'activity' && <ActivityLogView />}
           {view === 'styleguide' && isDecals && <StyleGuideView />}
           {view === 'config' && isDecals && <ConfigView />}
+          {view === 'config' && isSecurity && <SecurityConfigView />}
         </div>
       </div>
 

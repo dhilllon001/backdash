@@ -7,15 +7,26 @@ import {
   Activity,
   PanelLeftClose,
   PanelLeft,
+  Users,
+  UserCheck,
 } from 'lucide-react'
 
-const NAV = [
+const DECALS_NAV = [
   { id: 'payroll', label: 'Dashboard', icon: LayoutDashboard, badge: 4 },
   { id: 'jobs', label: 'Reporting', icon: LayoutGrid, badge: 7 },
   { id: 'inventory', label: 'Inventory', icon: Package },
   { id: 'activity', label: 'Activity log', icon: Activity },
   { id: 'styleguide', label: 'Style guide', icon: BookOpen },
   { id: 'config', label: 'Configuration', icon: Settings },
+]
+
+const SECURITY_NAV = [
+  { id: 'payroll', label: 'Dashboard', icon: LayoutDashboard, badge: 3 },
+  { id: 'visitors', label: 'Visitors', icon: Users, badge: 6 },
+  { id: 'assignments', label: 'Assignments', icon: UserCheck },
+  { id: 'jobs', label: 'Reporting', icon: LayoutGrid },
+  { id: 'config', label: 'Configuration', icon: Settings },
+  { id: 'activity', label: 'Activity log', icon: Activity },
 ]
 
 const OTHER_NAV = [
@@ -31,10 +42,15 @@ export function Sidebar({
   onToggle,
   workspaceLabel = 'Decals',
   onHome,
-  isDecals = true,
+  workspaceId = 'decals',
 }) {
   const active = view === 'person' ? 'payroll' : view
-  const items = isDecals ? NAV : OTHER_NAV
+  const items =
+    workspaceId === 'decals'
+      ? DECALS_NAV
+      : workspaceId === 'security'
+        ? SECURITY_NAV
+        : OTHER_NAV
 
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>

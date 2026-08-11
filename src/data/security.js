@@ -1,0 +1,745 @@
+/** Security workspace mock data — guards, visitors, yards, tasks, shifts, reporting. */
+
+export const SEC_YARDS = [
+  {
+    id: 'brampton',
+    name: 'Brampton',
+    code: 'BRM',
+    address: '8500 Torbram Rd, Brampton, ON L6T 5C6',
+  },
+  {
+    id: 'mississauga',
+    name: 'Mississauga',
+    code: 'MIS',
+    address: '2150 Drew Rd, Mississauga, ON L5S 1S4',
+  },
+  {
+    id: 'toronto',
+    name: 'Toronto',
+    code: 'TOR',
+    address: '45 Norfinch Dr, North York, ON M3N 1X1',
+  },
+  {
+    id: 'dallas',
+    name: 'Dallas',
+    code: 'DAL',
+    address: '4200 Regal Row, Dallas, TX 75247',
+  },
+  {
+    id: 'laredo',
+    name: 'Laredo',
+    code: 'LAR',
+    address: '1400 Industrial Blvd, Laredo, TX 78045',
+  },
+]
+
+export const SEC_TASKS = [
+  {
+    id: 't-fence',
+    name: 'Fence Inspection',
+    duration: 20,
+    description: 'Walk perimeter fence line; log damage, gaps, or tampering.',
+  },
+  {
+    id: 't-gate',
+    name: 'Gate Inspection',
+    duration: 15,
+    description: 'Verify gate locks, hinges, and access control hardware.',
+  },
+  {
+    id: 't-camera',
+    name: 'Camera Inspection',
+    duration: 25,
+    description: 'Check NVR feeds, lens obstructions, and night-vision status.',
+  },
+  {
+    id: 't-visitor',
+    name: 'Visitor Tracking',
+    duration: 30,
+    description: 'Log arrivals, verify credentials, capture gate photos.',
+  },
+  {
+    id: 't-patrol',
+    name: 'Yard Patrol',
+    duration: 45,
+    description: 'Scheduled foot patrol of yard lanes and staging areas.',
+  },
+  {
+    id: 't-lighting',
+    name: 'Lighting Check',
+    duration: 15,
+    description: 'Confirm pole lights and dock illumination after dusk.',
+  },
+  {
+    id: 't-fire',
+    name: 'Fire Extinguisher Audit',
+    duration: 20,
+    description: 'Monthly tag check and pressure gauge verification.',
+  },
+  {
+    id: 't-trailer',
+    name: 'Trailer Seal Check',
+    duration: 10,
+    description: 'Verify seal numbers on outbound trailers at gate.',
+  },
+]
+
+export const SEC_SHIFTS = [
+  { id: 'morning', label: 'Morning', start: '06:00', end: '14:00' },
+  { id: 'evening', label: 'Evening', start: '14:00', end: '22:00' },
+  { id: 'night', label: 'Night', start: '22:00', end: '06:00' },
+]
+
+export const SECURITY_PEOPLE = [
+  {
+    id: 's1',
+    initials: 'RK',
+    color: '#2B4FD3',
+    bg: '#EEF1FD',
+    name: 'Raj Kang',
+    role: 'Guard · SEC-0201',
+    department: 'security',
+    region: 'ontario',
+    yards: ['Brampton', 'Mississauga'],
+    payable: '82:15',
+    reg: '78:00',
+    ot: '4:15',
+    jobHrs: '68:40',
+    util: 84,
+    jobs: '9/11',
+    status: { tone: 'dang', label: 'Open punch' },
+    canApprove: false,
+  },
+  {
+    id: 's2',
+    initials: 'NL',
+    color: '#1E7E82',
+    bg: '#E6F5F6',
+    name: 'Nina Lopez',
+    role: 'Senior guard · SEC-0202',
+    department: 'security',
+    region: 'ontario',
+    yards: ['Toronto'],
+    payable: '79:30',
+    reg: '79:30',
+    ot: null,
+    jobHrs: '71:05',
+    util: 89,
+    jobs: '10/10',
+    status: { tone: 'ok', label: 'Approved' },
+    canApprove: false,
+  },
+  {
+    id: 's3',
+    initials: 'JT',
+    color: '#C45C26',
+    bg: '#FBECE4',
+    name: 'Jason Tran',
+    role: 'Guard · SEC-0203',
+    department: 'security',
+    region: 'ontario',
+    yards: ['Brampton'],
+    payable: '76:48',
+    reg: '72:00',
+    ot: '4:48',
+    jobHrs: '62:20',
+    util: 81,
+    jobs: '8/9',
+    status: { tone: 'info', label: 'Waiting for approval' },
+    canApprove: true,
+  },
+  {
+    id: 's4',
+    initials: 'SO',
+    color: '#5B4B9E',
+    bg: '#EEEAF8',
+    name: 'Sam Okonkwo',
+    role: 'Lead guard · SEC-0204',
+    department: 'security',
+    region: 'us',
+    yards: ['Dallas'],
+    payable: '88:00',
+    reg: '80:00',
+    ot: '8:00',
+    jobHrs: '74:30',
+    util: 85,
+    jobs: '11/12',
+    status: { tone: 'info', label: 'Waiting for approval' },
+    canApprove: true,
+  },
+  {
+    id: 's5',
+    initials: 'JH',
+    color: '#1F7A43',
+    bg: '#E6F6EC',
+    name: 'Jordan Hale',
+    role: 'Guard · SEC-0205',
+    department: 'security',
+    region: 'us',
+    yards: ['Laredo'],
+    payable: '80:12',
+    reg: '80:12',
+    ot: null,
+    jobHrs: '69:45',
+    util: 87,
+    jobs: '9/9',
+    status: { tone: 'ok', label: 'Approved' },
+    canApprove: false,
+  },
+  {
+    id: 's6',
+    initials: 'PS',
+    color: '#9A6B1A',
+    bg: '#FBF3E4',
+    name: 'Priya Shah',
+    role: 'Guard · SEC-0206',
+    department: 'security',
+    region: 'ontario',
+    yards: ['Mississauga'],
+    payable: '74:20',
+    reg: '74:20',
+    ot: null,
+    jobHrs: '58:10',
+    util: 78,
+    jobs: '7/8',
+    status: { tone: 'info', label: 'Waiting for approval' },
+    canApprove: true,
+  },
+  {
+    id: 's7',
+    initials: 'NP',
+    color: '#B42318',
+    bg: '#FDECEC',
+    name: 'Nina Patel',
+    role: 'Guard · SEC-0207',
+    department: 'security',
+    region: 'ontario',
+    yards: ['Brampton', 'Toronto'],
+    payable: '81:05',
+    reg: '76:00',
+    ot: '5:05',
+    jobHrs: '65:30',
+    util: 81,
+    jobs: '8/10',
+    status: { tone: 'dang', label: 'Open punch' },
+    canApprove: false,
+  },
+  {
+    id: 's8',
+    initials: 'MC',
+    color: '#2B4FD3',
+    bg: '#E4ECFB',
+    name: 'Maria Chen',
+    role: 'Guard · SEC-0208',
+    department: 'security',
+    region: 'us',
+    yards: ['Dallas', 'Laredo'],
+    payable: '77:55',
+    reg: '77:55',
+    ot: null,
+    jobHrs: '66:00',
+    util: 85,
+    jobs: '8/8',
+    status: { tone: 'ok', label: 'Approved' },
+    canApprove: false,
+  },
+]
+
+const PH = {
+  plate: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=480&h=320&fit=crop',
+  id: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=480&h=320&fit=crop',
+  badge: 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=480&h=320&fit=crop',
+  gate: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=480&h=320&fit=crop',
+  truck: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=480&h=320&fit=crop',
+  dock: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=480&h=320&fit=crop',
+}
+
+export const VISITORS = [
+  {
+    id: 'V-1042',
+    name: 'Raj Patel',
+    type: 'Carrier driver',
+    company: 'Swift Logistics',
+    plate: 'ON AB 4829',
+    yard: 'Brampton',
+    status: 'on_site',
+    checkedIn: '2026-07-20T08:14:00',
+    checkedOut: null,
+    timeline: [
+      { time: '08:14', label: 'Arrived at gate', detail: 'Badge scan · Lane 2' },
+      { time: '08:16', label: 'ID verified', detail: 'Driver licence + carrier manifest' },
+      { time: '08:18', label: 'Gate photo captured', detail: 'Front plate + trailer seal' },
+      { time: '08:22', label: 'Dock assigned', detail: 'Door 14 · inbound decals' },
+    ],
+    photos: [
+      { label: 'Front plate', src: PH.plate, time: '08:18' },
+      { label: 'Driver ID', src: PH.id, time: '08:16' },
+      { label: 'Visitor badge', src: PH.badge, time: '08:17' },
+      { label: 'Gate entry', src: PH.gate, time: '08:14' },
+    ],
+  },
+  {
+    id: 'V-1041',
+    name: 'Maria Lopez',
+    type: 'HVAC vendor',
+    company: 'CoolAir Services',
+    plate: 'ON CK 7712',
+    yard: 'Mississauga',
+    status: 'on_site',
+    checkedIn: '2026-07-20T09:02:00',
+    checkedOut: null,
+    timeline: [
+      { time: '09:02', label: 'Arrived at gate', detail: 'Service van · pre-approved work order' },
+      { time: '09:05', label: 'Escorted to roof unit', detail: 'Priya Shah · SEC-0206' },
+    ],
+    photos: [
+      { label: 'Service van plate', src: PH.plate, time: '09:02' },
+      { label: 'Vendor ID', src: PH.id, time: '09:03' },
+      { label: 'Work order', src: PH.badge, time: '09:04' },
+      { label: 'Gate entry', src: PH.gate, time: '09:02' },
+    ],
+  },
+  {
+    id: 'V-1040',
+    name: 'David Kim',
+    type: 'Auditor',
+    company: 'KPMG',
+    plate: '—',
+    yard: 'Toronto',
+    status: 'departed',
+    checkedIn: '2026-07-19T10:30:00',
+    checkedOut: '2026-07-19T14:45:00',
+    timeline: [
+      { time: '10:30', label: 'Checked in', detail: 'Reception escort · Nina Lopez' },
+      { time: '14:45', label: 'Checked out', detail: 'Badge returned · gate log signed' },
+    ],
+    photos: [
+      { label: 'Corporate ID', src: PH.id, time: '10:31' },
+      { label: 'Visitor badge', src: PH.badge, time: '10:32' },
+      { label: 'Lobby entry', src: PH.gate, time: '10:30' },
+      { label: 'Exit gate', src: PH.gate, time: '14:45' },
+    ],
+  },
+  {
+    id: 'V-1039',
+    name: 'Carlos Mendez',
+    type: 'Carrier driver',
+    company: 'JB Hunt',
+    plate: 'TX 4K 8821',
+    yard: 'Dallas',
+    status: 'departed',
+    checkedIn: '2026-07-19T06:45:00',
+    checkedOut: '2026-07-19T11:20:00',
+    timeline: [
+      { time: '06:45', label: 'Gate in', detail: 'Outbound trailer pickup' },
+      { time: '11:20', label: 'Gate out', detail: 'Seal verified · Sam Okonkwo' },
+    ],
+    photos: [
+      { label: 'Trailer plate', src: PH.plate, time: '06:46' },
+      { label: 'CDL', src: PH.id, time: '06:47' },
+      { label: 'Truck cab', src: PH.truck, time: '06:45' },
+      { label: 'Gate exit', src: PH.gate, time: '11:20' },
+    ],
+  },
+  {
+    id: 'V-1038',
+    name: 'Emily Watson',
+    type: 'Client visit',
+    company: 'FleetCo',
+    plate: 'ON BY 3390',
+    yard: 'Brampton',
+    status: 'departed',
+    checkedIn: '2026-07-18T13:00:00',
+    checkedOut: '2026-07-18T15:30:00',
+    timeline: [
+      { time: '13:00', label: 'Arrival', detail: 'Sales tour · conference room B' },
+      { time: '15:30', label: 'Departure', detail: 'Escorted out · Raj Kang' },
+    ],
+    photos: [
+      { label: 'Parking pass', src: PH.badge, time: '13:01' },
+      { label: 'Driver licence', src: PH.id, time: '13:00' },
+      { label: 'Vehicle plate', src: PH.plate, time: '13:00' },
+      { label: 'Main gate', src: PH.gate, time: '13:00' },
+    ],
+  },
+  {
+    id: 'V-1037',
+    name: 'Ahmed Hassan',
+    type: 'Maintenance',
+    company: 'YardWorks',
+    plate: 'ON CV 5510',
+    yard: 'Laredo',
+    status: 'on_site',
+    checkedIn: '2026-07-20T07:30:00',
+    checkedOut: null,
+    timeline: [
+      { time: '07:30', label: 'Gate in', detail: 'Fence repair crew · 3 personnel' },
+      { time: '07:35', label: 'PPE verified', detail: 'Hard hats + hi-vis issued' },
+    ],
+    photos: [
+      { label: 'Work truck', src: PH.truck, time: '07:30' },
+      { label: 'Contractor ID', src: PH.id, time: '07:31' },
+      { label: 'Site badge', src: PH.badge, time: '07:32' },
+      { label: 'South gate', src: PH.gate, time: '07:30' },
+    ],
+  },
+  {
+    id: 'V-1036',
+    name: 'Lisa Nguyen',
+    type: 'Carrier driver',
+    company: 'TransForce',
+    plate: 'ON AR 9021',
+    yard: 'Mississauga',
+    status: 'departed',
+    checkedIn: '2026-07-17T16:10:00',
+    checkedOut: '2026-07-17T17:05:00',
+    timeline: [
+      { time: '16:10', label: 'Drop-off', detail: 'Empty trailer return' },
+      { time: '17:05', label: 'Departed', detail: 'Gate 1 · Priya Shah' },
+    ],
+    photos: [
+      { label: 'Rear plate', src: PH.plate, time: '16:11' },
+      { label: 'Driver ID', src: PH.id, time: '16:10' },
+      { label: 'Dock photo', src: PH.dock, time: '16:15' },
+      { label: 'Gate exit', src: PH.gate, time: '17:05' },
+    ],
+  },
+  {
+    id: 'V-1035',
+    name: 'Tom Bradley',
+    type: 'IT contractor',
+    company: 'NetSphere',
+    plate: 'ON DH 2208',
+    yard: 'Toronto',
+    status: 'on_site',
+    checkedIn: '2026-07-20T11:00:00',
+    checkedOut: null,
+    timeline: [
+      { time: '11:00', label: 'Checked in', detail: 'Server room access · escort required' },
+      { time: '11:15', label: 'Badge issued', detail: 'Limited access · expires 17:00' },
+    ],
+    photos: [
+      { label: 'Contractor badge', src: PH.badge, time: '11:15' },
+      { label: 'Photo ID', src: PH.id, time: '11:01' },
+      { label: 'Vehicle plate', src: PH.plate, time: '11:00' },
+      { label: 'Lobby gate', src: PH.gate, time: '11:00' },
+    ],
+  },
+  {
+    id: 'V-1034',
+    name: 'Sandra Ortiz',
+    type: 'Food service',
+    company: 'Canteen Co.',
+    plate: 'TX 7M 4412',
+    yard: 'Dallas',
+    status: 'departed',
+    checkedIn: '2026-07-18T11:30:00',
+    checkedOut: '2026-07-18T12:15:00',
+    timeline: [
+      { time: '11:30', label: 'Delivery', detail: 'Breakroom restock' },
+      { time: '12:15', label: 'Departed', detail: 'Maria Chen · gate log' },
+    ],
+    photos: [
+      { label: 'Delivery van', src: PH.truck, time: '11:30' },
+      { label: 'Vendor ID', src: PH.id, time: '11:31' },
+      { label: 'Pass badge', src: PH.badge, time: '11:32' },
+      { label: 'Gate photo', src: PH.gate, time: '11:30' },
+    ],
+  },
+  {
+    id: 'V-1033',
+    name: 'James Wu',
+    type: 'Carrier driver',
+    company: 'XPO Logistics',
+    plate: 'ON CL 6677',
+    yard: 'Brampton',
+    status: 'on_site',
+    checkedIn: '2026-07-20T06:55:00',
+    checkedOut: null,
+    timeline: [
+      { time: '06:55', label: 'Early arrival', detail: 'Pre-dock staging · Lane 4' },
+      { time: '07:10', label: 'Manifest verified', detail: 'Inbound graphics shipment' },
+    ],
+    photos: [
+      { label: 'Tractor plate', src: PH.plate, time: '06:56' },
+      { label: 'CDL scan', src: PH.id, time: '06:57' },
+      { label: 'Temp badge', src: PH.badge, time: '06:58' },
+      { label: 'North gate', src: PH.gate, time: '06:55' },
+    ],
+  },
+]
+
+/** Shift task assignments per yard (default config). */
+export const SEC_YARD_SHIFT_TASKS = {
+  brampton: {
+    morning: ['t-gate', 't-visitor', 't-fence', 't-patrol'],
+    evening: ['t-gate', 't-camera', 't-lighting', 't-patrol'],
+    night: ['t-fence', 't-camera', 't-trailer', 't-patrol'],
+  },
+  mississauga: {
+    morning: ['t-gate', 't-visitor', 't-fire'],
+    evening: ['t-gate', 't-camera', 't-patrol'],
+    night: ['t-fence', 't-camera', 't-trailer'],
+  },
+  toronto: {
+    morning: ['t-gate', 't-visitor', 't-patrol'],
+    evening: ['t-gate', 't-lighting', 't-camera'],
+    night: ['t-fence', 't-camera'],
+  },
+  dallas: {
+    morning: ['t-gate', 't-visitor', 't-trailer', 't-patrol'],
+    evening: ['t-gate', 't-camera', 't-fence'],
+    night: ['t-camera', 't-trailer', 't-patrol'],
+  },
+  laredo: {
+    morning: ['t-gate', 't-visitor', 't-trailer'],
+    evening: ['t-gate', 't-fence', 't-patrol'],
+    night: ['t-camera', 't-trailer', 't-fence'],
+  },
+}
+
+/** Person shift jobs for detail view. */
+export const SEC_PERSON_SHIFTS = {
+  s1: [
+    {
+      id: 'ss-rk-1',
+      day: 'Mon, Jul 20',
+      yard: 'Brampton',
+      in: '06:02',
+      out: null,
+      open: true,
+      jobs: [
+        { id: 'SEC-801', title: 'Gate Inspection', unit: 'Gate 2', start: '06:15', end: '06:35', status: { tone: 'ok', label: 'Complete' } },
+        { id: 'SEC-802', title: 'Visitor Tracking', unit: 'Lane 2', start: '08:10', end: null, status: { tone: 'warn', label: 'In progress' } },
+        { id: 'SEC-803', title: 'Fence Inspection', unit: 'North perimeter', start: '10:00', end: '10:22', status: { tone: 'ok', label: 'Complete' } },
+      ],
+    },
+  ],
+  s2: [
+    {
+      id: 'ss-nl-1',
+      day: 'Mon, Jul 20',
+      yard: 'Toronto',
+      in: '06:00',
+      out: '14:05',
+      open: false,
+      jobs: [
+        { id: 'SEC-810', title: 'Gate Inspection', unit: 'Main gate', start: '06:10', end: '06:28', status: { tone: 'ok', label: 'Complete' } },
+        { id: 'SEC-811', title: 'Camera Inspection', unit: 'Dock cams', start: '08:00', end: '08:30', status: { tone: 'ok', label: 'Complete' } },
+      ],
+    },
+  ],
+}
+
+/** Reporting timeline data — segs use left/width % on 6–18h scale. */
+export const SEC_REPORT_SHIFTS = [
+  {
+    id: 'sr-s1-0720',
+    personId: 's1',
+    date: '2026-07-20',
+    dateLabel: 'Mon, Jul 20',
+    shiftStart: '06:02',
+    shiftEnd: '—',
+    hours: '—',
+    productiveHours: '4:12',
+    alerts: ['Missing punch-out'],
+    jobs: [
+      {
+        id: 'SEC-801',
+        title: 'Gate Inspection',
+        unit: 'Gate 2',
+        status: 'Complete',
+        startMin: 375,
+        endMin: 395,
+        left: 2.1,
+        width: 2.8,
+        hours: '0:20',
+      },
+      {
+        id: 'SEC-802',
+        title: 'Visitor Tracking',
+        unit: 'Lane 2',
+        status: 'In progress',
+        startMin: 490,
+        endMin: 600,
+        left: 45.8,
+        width: 15.3,
+        hours: '1:50',
+      },
+      {
+        id: 'SEC-803',
+        title: 'Fence Inspection',
+        unit: 'North',
+        status: 'Complete',
+        startMin: 600,
+        endMin: 622,
+        left: 66.7,
+        width: 3.1,
+        hours: '0:22',
+      },
+    ],
+  },
+  {
+    id: 'sr-s2-0720',
+    personId: 's2',
+    date: '2026-07-20',
+    dateLabel: 'Mon, Jul 20',
+    shiftStart: '06:00',
+    shiftEnd: '14:05',
+    hours: '8:05',
+    productiveHours: '7:18',
+    alerts: [],
+    jobs: [
+      {
+        id: 'SEC-810',
+        title: 'Gate Inspection',
+        unit: 'Main',
+        status: 'Complete',
+        startMin: 370,
+        endMin: 388,
+        left: 1.4,
+        width: 2.5,
+        hours: '0:18',
+      },
+      {
+        id: 'SEC-811',
+        title: 'Camera Inspection',
+        unit: 'Dock',
+        status: 'Complete',
+        startMin: 480,
+        endMin: 510,
+        left: 33.3,
+        width: 4.2,
+        hours: '0:30',
+      },
+      {
+        id: 'SEC-812',
+        title: 'Yard Patrol',
+        unit: 'Full yard',
+        status: 'Complete',
+        startMin: 540,
+        endMin: 585,
+        left: 50,
+        width: 6.25,
+        hours: '0:45',
+      },
+    ],
+  },
+  {
+    id: 'sr-s3-0719',
+    personId: 's3',
+    date: '2026-07-19',
+    dateLabel: 'Sun, Jul 19',
+    shiftStart: '14:00',
+    shiftEnd: '22:10',
+    hours: '8:10',
+    productiveHours: '6:55',
+    alerts: [],
+    jobs: [
+      {
+        id: 'SEC-820',
+        title: 'Gate Inspection',
+        unit: 'Gate 1',
+        status: 'Complete',
+        startMin: 840,
+        endMin: 855,
+        left: 0,
+        width: 2.1,
+        hours: '0:15',
+      },
+      {
+        id: 'SEC-821',
+        title: 'Lighting Check',
+        unit: 'Dock row',
+        status: 'Complete',
+        startMin: 900,
+        endMin: 915,
+        left: 16.7,
+        width: 2.1,
+        hours: '0:15',
+      },
+      {
+        id: 'SEC-822',
+        title: 'Visitor Tracking',
+        unit: 'Lane 3',
+        status: 'Verified',
+        startMin: 960,
+        endMin: 990,
+        left: 33.3,
+        width: 4.2,
+        hours: '0:30',
+      },
+    ],
+  },
+  {
+    id: 'sr-s4-0719',
+    personId: 's4',
+    date: '2026-07-19',
+    dateLabel: 'Sun, Jul 19',
+    shiftStart: '06:00',
+    shiftEnd: '14:00',
+    hours: '8:00',
+    productiveHours: '7:40',
+    alerts: [],
+    jobs: [
+      {
+        id: 'SEC-830',
+        title: 'Trailer Seal Check',
+        unit: 'Outbound',
+        status: 'Complete',
+        startMin: 390,
+        endMin: 400,
+        left: 4.2,
+        width: 1.4,
+        hours: '0:10',
+      },
+      {
+        id: 'SEC-831',
+        title: 'Yard Patrol',
+        unit: 'Dallas yard',
+        status: 'Complete',
+        startMin: 420,
+        endMin: 465,
+        left: 11.1,
+        width: 6.25,
+        hours: '0:45',
+      },
+    ],
+  },
+]
+
+export function getSecurityPerson(id) {
+  return SECURITY_PEOPLE.find((p) => p.id === id) || null
+}
+
+export function getVisitor(id) {
+  return VISITORS.find((v) => v.id === id) || null
+}
+
+export function getSecTask(id) {
+  return SEC_TASKS.find((t) => t.id === id) || null
+}
+
+export function getSecYard(id) {
+  return SEC_YARDS.find((y) => y.id === id) || null
+}
+
+export function getPersonShifts(personId) {
+  return SEC_PERSON_SHIFTS[personId] || SEC_PERSON_SHIFTS.s1 || []
+}
+
+export function visitorsOnSite() {
+  return VISITORS.filter((v) => v.status === 'on_site')
+}
+
+export function formatVisitorTime(iso) {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+}
+
+export function formatVisitorDate(iso) {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+}
