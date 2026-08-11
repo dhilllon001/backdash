@@ -531,11 +531,11 @@ export function JobsView() {
           </div>
 
           <div className="rp-toolbar">
-            <label className="rp-search">
-              <Search size={14} strokeWidth={2} />
+            <label className="rp-search rp-search-lg">
+              <Search size={15} strokeWidth={2} />
               <input
                 type="search"
-                placeholder="Search person, job ID, sub-job or unit"
+                placeholder="Search person, job ID, sub-job or unit…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
@@ -594,7 +594,7 @@ export function JobsView() {
             <div className="rp-legend">
               <span>
                 <i className="rp-sw v" />
-                Verified
+                Job
               </span>
               <span>
                 <i className="rp-sw c" />
@@ -602,7 +602,7 @@ export function JobsView() {
               </span>
               <span>
                 <i className="rp-sw p" />
-                In progress
+                Open / OT
               </span>
             </div>
           </div>
@@ -612,7 +612,18 @@ export function JobsView() {
               <div />
               <div>{groupBy === 'job' ? 'Job' : groupBy === 'date' ? 'Date' : 'Person / date'}</div>
               <div className="h-shift">Shift</div>
-              <div className="h-tl">Day timeline · 06:00 → 18:00</div>
+              <div className="h-tl">
+                <span>Day timeline</span>
+                <span className="h-tl-scale num" aria-hidden="true">
+                  <em>6</em>
+                  <em>8</em>
+                  <em>10</em>
+                  <em>12</em>
+                  <em>14</em>
+                  <em>16</em>
+                  <em>18</em>
+                </span>
+              </div>
               <div className="r">Hours</div>
               <div className="r h-prod">Productive</div>
               <div className="r h-ot">OT</div>
@@ -983,55 +994,72 @@ function JobCard({ job, index, setTip }) {
 }
 
 function Timeline({ day, setTip }) {
-  const ticks = []
-  for (let t = W0; t <= W1; t += 120) ticks.push(t)
+  const hours = []
+  for (let h = 6; h <= 18; h += 2) hours.push(h)
   const end = day.shiftEnd && day.shiftEnd !== '—' ? timeToMinutes(day.shiftEnd) : W1
   const start = timeToMinutes(day.shiftStart) || W0
 
   return (
     <div className="rp-tl">
-      <div className="track2" />
-      {ticks.map((t) => (
-        <div key={t} className="tick" style={{ left: `${pos(t)}%` }} />
-      ))}
-      <div
-        className="span"
-        style={{ left: `${pos(start)}%`, width: `${Math.max(pos(end) - pos(start), 0.5)}%` }}
-      />
-      {!day.shiftEnd || day.shiftEnd === '—' ? (
-        <>
-          <div
-            className="open-end"
-            style={{ left: `${pos(start)}%`, width: `${100 - pos(start)}%` }}
-          />
-          <div className="cap" style={{ left: `${pos(start)}%` }} />
-        </>
-      ) : null}
-      {day.jobs.map((j) => (
+      <div className="rp-tl-scale" aria-hidden="true">
+        {hours.map((h) => (
+          <span key={h} className="rp-tl-hour" style={{ left: `${pos(h * 60)}%` }}>
+            {h}
+          </span>
+        ))}
+      </div>
+      <div className="rp-tl-body">
+        <div className="track2" />
+        {hours.map((h) => (
+          <div key={`t-${h}`} className="tick" style={{ left: `${pos(h * 60)}%` }} />
+        ))}
         <div
-          key={j.id}
-          className={`blk ${jobBlockClass(j.status)}`}
-          style={{
-            left: `${pos(j.startMin)}%`,
-            width: `${Math.max(pos(j.endMin) - pos(j.startMin), 0.7)}%`,
-          }}
-          onMouseEnter={(e) => {
-            e.stopPropagation()
-            setTip({
-              x: e.clientX + 12,
-              y: e.clientY + 14,
-              title: `${j.id} · ${j.title}`,
-              line1: `${j.unit} · ${j.status}`,
-              line2: `${formatMinutes(j.startMin)} → ${formatMinutes(j.endMin)} · ${formatMinutes(j.mins)} · ${j.sub.length} sub-jobs`,
-            })
-          }}
-          onMouseMove={(e) => {
-            e.stopPropagation()
-            setTip((t) => (t ? { ...t, x: e.clientX + 12, y: e.clientY + 14 } : t))
-          }}
-          onMouseLeave={() => setTip(null)}
+          className="span"
+          style={{ left: `${pos(start)}%`, width: `${Math.max(pos(end) - pos(start), 0.5)}%` }}
         />
-      ))}
+        {!day.shiftEnd || day.shiftEnd === '—' ? (
+          <>
+            <div
+              className="open-end"
+              style={{ left: `${pos(start)}%`, width: `${100 - pos(start)}%` }}
+            />
+            <div className="cap" style={{ left: `${pos(start)}%` }} />
+          </>
+        ) : null}
+        {day.jobs.map((j) => {
+          const widthPct = Math.max(pos(j.endMin) - pos(j.startMin), 0.7)
+          const showLabel = widthPct >= 9
+          return (
+            <div
+              key={j.id}
+              className={`blk ${jobBlockClass(j.status)}`}
+              style={{
+                left: `${pos(j.startMin)}%`,
+                width: `${widthPct}%`,
+              }}
+              onMouseEnter={(e) => {
+                e.stopPropagation()
+                setTip({
+                  x: e.clientX + 12,
+                  y: e.clientY + 14,
+                  title: `${j.id} · ${j.title}`,
+                  line1: `${j.unit} · ${j.status}`,
+                  line2: `${formatMinutes(j.startMin)} → ${formatMinutes(j.endMin)} · ${formatMinutes(j.mins)} · ${j.sub.length} sub-jobs`,
+                })
+              }}
+              onMouseMove={(e) => {
+                e.stopPropagation()
+                setTip((t) => (t ? { ...t, x: e.clientX + 12, y: e.clientY + 14 } : t))
+              }}
+              onMouseLeave={() => setTip(null)}
+            >
+              {showLabel ? (
+                <span className="blk-lab num">{formatMinutes(j.mins)}</span>
+              ) : null}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
