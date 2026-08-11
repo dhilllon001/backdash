@@ -7675,6 +7675,18 @@ tr.sub .t-lab { color: var(--text-2); }
   background: #fff !important;
   color: #12161C !important;
 }
+.pd.dash3 .pd-hero .btn-primary,
+.pd.dash3 .pd-miss-actions .btn-primary,
+.pd.dash3 .pd-act-row .btn-primary {
+  background: #12161C !important;
+  border-color: #12161C !important;
+  color: #fff !important;
+}
+.pd.dash3 .pd-hero .btn:not(.btn-primary),
+.pd.dash3 .pd-miss-actions .btn:not(.btn-primary) {
+  color: #12161C !important;
+  background: #fff !important;
+}
 .pd.dash3 .pd-hero-id { color: #8B94A3 !important; }
 .pd.dash3 .pd-hero h2 { color: #12161C !important; }
 .pd.dash3 .pd-hero-unit { color: #5A6472 !important; }
