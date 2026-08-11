@@ -8107,3 +8107,124 @@ tr.sub .t-lab { color: var(--text-2); }
   font-size: 11.5px;
   padding: 5px 10px;
 }
+
+/* Missing items as alert rows with actions */
+.pd.dash3 .pd-miss-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: #F0D3A6;
+  border-top: 1px solid #F0D3A6;
+}
+.pd.dash3 .pd-miss-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #FFF8F0;
+}
+.pd.dash3 .pd-miss-row.soft { background: #FFFCF7; }
+.pd.dash3 .pd-miss-alert {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #F3E0C4;
+  color: #8A4B0A;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.pd.dash3 .pd-miss-row.soft .pd-miss-alert {
+  background: #F5E9D6;
+  color: #9A6B1A;
+}
+.pd.dash3 .pd-miss-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pd.dash3 .pd-miss-copy b {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8A4B0A;
+  letter-spacing: -0.01em;
+}
+.pd.dash3 .pd-miss-copy span {
+  font-size: 12px;
+  font-weight: 500;
+  color: #A85C06;
+  line-height: 1.35;
+}
+.pd.dash3 .pd-miss-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pd.dash3 .pd-miss-actions .btn {
+  font-size: 11.5px;
+  padding: 5px 10px;
+  white-space: nowrap;
+}
+
+.pd.dash3 .pd-act.alert {
+  background: #FFF8F0;
+  border-radius: 10px;
+  margin: 4px 8px;
+  padding: 8px 10px;
+}
+.pd.dash3 .pd-act.alert::before { background: #F0D3A6; }
+.pd.dash3 .pd-act-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pd.dash3 .pd-act-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 8px;
+}
+.pd.dash3 .pd-act-row-main b {
+  color: #8A4B0A;
+  font-size: 12.5px;
+}
+.pd.dash3 .pd-act-row-main span {
+  color: #A85C06;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+.pd.dash3 .pd-act-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #F3E0C4;
+  color: #8A4B0A;
+  font-size: 9.5px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.pd.dash3 .pd-act-row .btn {
+  flex: none;
+  font-size: 11.5px;
+  padding: 5px 10px;
+}
+@media (max-width: 720px) {
+  .pd.dash3 .pd-miss-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .pd.dash3 .pd-miss-actions { width: 100%; }
+}

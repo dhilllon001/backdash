@@ -543,6 +543,66 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                       </b>
                     </div>
                   </div>
+
+                  {selected.open || (selected.jobs || []).some((j) => !j.end) ? (
+                    <div className="pd-miss-list">
+                      {selected.open ? (
+                        <div className="pd-miss-row">
+                          <span className="pd-miss-alert">Alert</span>
+                          <div className="pd-miss-copy">
+                            <b>Punch-out missing</b>
+                            <span>
+                              Suggested{' '}
+                              {formatClock(selected.exception?.time || '15:56')} · add a proper
+                              clock-out to close this shift
+                            </span>
+                          </div>
+                          <div className="pd-miss-actions">
+                            <button
+                              type="button"
+                              className="btn btn-sm"
+                              onClick={() => setEditing(true)}
+                            >
+                              Add time
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-primary"
+                              onClick={() =>
+                                onResolvePunch
+                                  ? onResolvePunch()
+                                  : savePunch({ in: selected.in, out: '15:56' })
+                              }
+                            >
+                              Use {formatClock(selected.exception?.time || '15:56')}
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+                      {(selected.jobs || [])
+                        .filter((j) => !j.end)
+                        .map((j) => (
+                          <div className="pd-miss-row soft" key={j.id}>
+                            <span className="pd-miss-alert">Open</span>
+                            <div className="pd-miss-copy">
+                              <b>
+                                {j.title} · {j.id}
+                              </b>
+                              <span>Job still in progress · end time not recorded</span>
+                            </div>
+                            <div className="pd-miss-actions">
+                              <button
+                                type="button"
+                                className="btn btn-sm"
+                                onClick={() => setTab('jobs')}
+                              >
+                                Review job
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  ) : null}
                 </div>
 
                 {editing ? (
@@ -671,30 +731,27 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                               <span className="pd-act-time num">{formatClock(ev.time)}</span>
                               <span className={`pd-act-dot ${ev.tone}`} />
                               <div className="pd-act-body">
-                                <b>{ev.title}</b>
-                                <span>{ev.detail}</span>
                                 {ev.alert ? (
-                                  <div className="pd-act-actions">
-                                    <button
-                                      type="button"
-                                      className="btn btn-sm"
-                                      onClick={() => setEditing(true)}
-                                    >
-                                      Enter manually
-                                    </button>
+                                  <div className="pd-act-row">
+                                    <div className="pd-act-row-main">
+                                      <em className="pd-act-badge">Alert</em>
+                                      <b>{ev.title}</b>
+                                      <span>{ev.detail}</span>
+                                    </div>
                                     <button
                                       type="button"
                                       className="btn btn-sm btn-primary"
-                                      onClick={() =>
-                                        onResolvePunch
-                                          ? onResolvePunch()
-                                          : savePunch({ in: selected.in, out: '15:56' })
-                                      }
+                                      onClick={() => setEditing(true)}
                                     >
-                                      Use {formatClock(selected.exception?.time || '15:56')}
+                                      Add time
                                     </button>
                                   </div>
-                                ) : null}
+                                ) : (
+                                  <>
+                                    <b>{ev.title}</b>
+                                    <span>{ev.detail}</span>
+                                  </>
+                                )}
                               </div>
                             </div>
                           ))}
@@ -967,30 +1024,27 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                   <span className="pd-act-time num">{formatClock(ev.time)}</span>
                   <span className={`pd-act-dot ${ev.tone}`} />
                   <div className="pd-act-body">
-                    <b>{ev.title}</b>
-                    <span>{ev.detail}</span>
                     {ev.alert ? (
-                      <div className="pd-act-actions">
-                        <button
-                          type="button"
-                          className="btn btn-sm"
-                          onClick={() => setEditing(true)}
-                        >
-                          Enter manually
-                        </button>
+                      <div className="pd-act-row">
+                        <div className="pd-act-row-main">
+                          <em className="pd-act-badge">Alert</em>
+                          <b>{ev.title}</b>
+                          <span>{ev.detail}</span>
+                        </div>
                         <button
                           type="button"
                           className="btn btn-sm btn-primary"
-                          onClick={() =>
-                            onResolvePunch
-                              ? onResolvePunch()
-                              : savePunch({ in: selected.in, out: '15:56' })
-                          }
+                          onClick={() => setEditing(true)}
                         >
-                          Use {formatClock(selected.exception?.time || '15:56')}
+                          Add time
                         </button>
                       </div>
-                    ) : null}
+                    ) : (
+                      <>
+                        <b>{ev.title}</b>
+                        <span>{ev.detail}</span>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
