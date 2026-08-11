@@ -12,11 +12,15 @@ import { ConfigView } from './views/OtherViews.jsx'
 import { StyleGuideView } from './views/StyleGuideView.jsx'
 import { InventoryView } from './views/InventoryView.jsx'
 import { ActivityLogView } from './views/ActivityLogView.jsx'
+import { HomeView } from './views/HomeView.jsx'
+import { WorkspaceDashboard } from './views/WorkspaceDashboard.jsx'
 import { useActivity } from './context/ActivityContext.jsx'
 import { EMPLOYEES, EXCEPTIONS } from './data/mock.js'
+import { getWorkspace } from './data/workspaces.js'
 
 export default function App() {
   const { logActivity } = useActivity()
+  const [workspaceId, setWorkspaceId] = useState(null) // null = home
   const [view, setView] = useState('payroll')
   const [personId, setPersonId] = useState(null)
   const [collapsed, setCollapsed] = useState(false)
@@ -29,6 +33,34 @@ export default function App() {
   const [proofOpen, setProofOpen] = useState(false)
   const [excOpen, setExcOpen] = useState(false)
   const [workflow, setWorkflow] = useState(null) // { type: 'punch'|'approve', employeeId }
+
+  const workspace = getWorkspace(workspaceId)
+  const isDecals = workspaceId === 'decals'
+  const onHome = () => {
+    setWorkspaceId(null)
+    setPersonId(null)
+    setView('payroll')
+    setExcOpen(false)
+    setAssignOpen(false)
+    setCreateJobOpen(false)
+    setProofOpen(false)
+    setWorkflow(null)
+    setSearch('')
+  }
+
+  const openWorkspace = (id) => {
+    setWorkspaceId(id)
+    setPersonId(null)
+    setView('payroll')
+    setExcOpen(false)
+    setSearch('')
+    logActivity({
+      area: 'payroll',
+      action: 'open_workspace',
+      title: `Opened ${getWorkspace(id)?.label || id}`,
+      detail: 'Switched workspace from home',
+    })
+  }
 
   useEffect(() => {
     const onKey = (e) => {
@@ -221,6 +253,10 @@ export default function App() {
   const blockingCount = EXCEPTIONS.filter((e) => e.status === 'blocking').length
   const needsPunch = emp?.status?.tone === 'dang' || /punch/i.test(emp?.status?.label || '')
 
+  if (!workspaceId) {
+    return <HomeView onSelect={openWorkspace} />
+  }
+
   return (
     <div className="app">
       <Sidebar
@@ -228,18 +264,25 @@ export default function App() {
         onNavigate={navigate}
         collapsed={collapsed}
         onToggle={() => setCollapsed((v) => !v)}
+        workspaceLabel={workspace?.label || 'Decals'}
+        onHome={onHome}
+        isDecals={isDecals}
       />
       <div className="main">
         <Topbar
-          mode={view === 'person' ? 'person' : 'default'}
+          mode={view === 'person' && isDecals ? 'person' : 'default'}
           showLocation={view === 'payroll'}
           location={location}
           onLocationChange={setLocation}
           search={search}
           onSearchChange={setSearch}
-          exceptionCount={blockingCount}
-          onOpenExceptions={openExceptionsPanel}
-          onCreateJob={view === 'person' ? () => openCreateJob(emp) : () => openCreateJob(null)}
+          exceptionCount={isDecals ? blockingCount : workspace?.exceptions || 0}
+          onOpenExceptions={isDecals ? openExceptionsPanel : () => {}}
+          onCreateJob={
+            view === 'person' && isDecals
+              ? () => openCreateJob(emp)
+              : () => openCreateJob(null)
+          }
           onProofTimesheet={openProofTimesheet}
           onShare={sharePersonTimesheet}
           onBack={() => navigate('payroll')}
@@ -252,7 +295,7 @@ export default function App() {
           onApprove={() => openApprove(emp?.id)}
         />
         <div className="content">
-          {view === 'payroll' && (
+          {view === 'payroll' && isDecals && (
             <PayrollView
               employees={employees}
               location={location}
@@ -262,18 +305,24 @@ export default function App() {
               onResolvePunch={(id) => openPunch(id)}
             />
           )}
-          {view === 'person' && (
+          {view === 'payroll' && !isDecals && (
+            <WorkspaceDashboard workspaceId={workspaceId} />
+          )}
+          {view === 'person' && isDecals && (
             <PersonDetailView
               personId={personId}
               employee={emp}
               onResolvePunch={() => openPunch(personId)}
             />
           )}
-          {view === 'jobs' && <JobsView />}
-          {view === 'inventory' && <InventoryView />}
+          {view === 'jobs' && isDecals && <JobsView />}
+          {view === 'jobs' && !isDecals && (
+            <WorkspaceDashboard workspaceId={workspaceId} />
+          )}
+          {view === 'inventory' && isDecals && <InventoryView />}
           {view === 'activity' && <ActivityLogView />}
-          {view === 'styleguide' && <StyleGuideView />}
-          {view === 'config' && <ConfigView />}
+          {view === 'styleguide' && isDecals && <StyleGuideView />}
+          {view === 'config' && isDecals && <ConfigView />}
         </div>
       </div>
 

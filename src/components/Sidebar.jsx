@@ -18,13 +18,28 @@ const NAV = [
   { id: 'config', label: 'Configuration', icon: Settings },
 ]
 
-export function Sidebar({ view, onNavigate, collapsed, onToggle }) {
+const OTHER_NAV = [
+  { id: 'payroll', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'jobs', label: 'Jobs board', icon: LayoutGrid },
+  { id: 'activity', label: 'Activity log', icon: Activity },
+]
+
+export function Sidebar({
+  view,
+  onNavigate,
+  collapsed,
+  onToggle,
+  workspaceLabel = 'Decals',
+  onHome,
+  isDecals = true,
+}) {
   const active = view === 'person' ? 'payroll' : view
+  const items = isDecals ? NAV : OTHER_NAV
 
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
       <div className="brand">
-        {!collapsed && <div className="brand-name">Decals</div>}
+        {!collapsed && <div className="brand-name">{workspaceLabel}</div>}
         <button
           className="sb-toggle"
           type="button"
@@ -35,8 +50,25 @@ export function Sidebar({ view, onNavigate, collapsed, onToggle }) {
           {collapsed ? <PanelLeft size={16} /> : <PanelLeftClose size={16} />}
         </button>
       </div>
+
+      {!collapsed ? (
+        <button type="button" className="sb-home" onClick={onHome}>
+          <LayoutGrid size={14} strokeWidth={2.2} />
+          All workspaces
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="nav-item sb-home-icon"
+          onClick={onHome}
+          title="All workspaces"
+        >
+          <LayoutGrid size={15} strokeWidth={2} />
+        </button>
+      )}
+
       {!collapsed && <div className="nav-label">Menu</div>}
-      {NAV.map(({ id, label, icon: Icon, badge }) => (
+      {items.map(({ id, label, icon: Icon, badge }) => (
         <button
           key={id}
           type="button"
