@@ -805,64 +805,89 @@ export function PersonDetailView({ personId, employee, onResolvePunch }) {
                     {(selected.jobs || []).map((job) => {
                       const jobPing = pings.find((p) => p.jobId === job.id)
                       return (
-                        <div className="pd-job-detail" key={job.id}>
-                          <div className="pd-job-detail-top">
-                            <div>
-                              <div className="pd-job-detail-title">
-                                {job.title} · {job.unit}
-                              </div>
-                              <div className="pd-job-detail-sub mono">{job.id}</div>
+                        <article
+                          className="pd-jcard"
+                          key={job.id}
+                          data-tip={`${job.id} · ${job.title} · ${job.actual}`}
+                        >
+                          <header className="pd-jcard-head">
+                            <div className="pd-jcard-title">
+                              <span className="mono">{job.id}</span>
+                              <h3>
+                                {job.title}
+                                <em>· {job.unit}</em>
+                              </h3>
                             </div>
-                            <Chip tone={job.status.tone}>{job.status.label}</Chip>
-                          </div>
-                          <div className="pd-time-boxes three">
-                            <div className="pd-tbox green">
+                            <Chip tone={job.status.tone} xs>
+                              {job.status.label}
+                            </Chip>
+                          </header>
+
+                          <div className="pd-jcard-metrics">
+                            <div>
                               <span>Time spent</span>
-                              <b>{job.actual}</b>
+                              <b className="num">{job.actual}</b>
                               <em>est {job.est}</em>
                             </div>
-                            <div className="pd-tbox blue">
+                            <div>
                               <span>Started</span>
-                              <b>{job.start ? formatClock(job.start) : '—'}</b>
+                              <b className="num">{job.start ? formatClock(job.start) : '—'}</b>
                               <em>{selected.day}</em>
                             </div>
-                            <div className="pd-tbox gray">
+                            <div>
                               <span>Ended</span>
-                              <b>{job.end ? formatClock(job.end) : 'In progress'}</b>
-                              <em>{job.status?.label || '—'}</em>
+                              <b className={`num${job.end ? '' : ' miss'}`}>
+                                {job.end ? formatClock(job.end) : 'In progress'}
+                              </b>
+                              <em>{job.checklist || '—'}</em>
+                            </div>
+                            <div className="pd-jcard-rail">
+                              <span>Timeline</span>
+                              <div className="pd-jcard-bar">
+                                <i style={{ width: job.end ? '78%' : '52%' }} />
+                              </div>
+                              <em>
+                                {job.start ? formatClock(job.start) : '—'} →{' '}
+                                {job.end ? formatClock(job.end) : 'open'}
+                              </em>
                             </div>
                           </div>
+
                           {jobPing ? (
                             <button
                               type="button"
-                              className="pd-loc-chip compact"
+                              className="pd-jcard-loc"
                               onClick={() => showOnMap(jobPing.id)}
                             >
-                              <MapPin size={13} />
-                              <div>
-                                <b>{jobPing.address}</b>
-                                <em className="mono">
-                                  {jobPing.lat.toFixed(5)}, {jobPing.lng.toFixed(5)}
-                                </em>
-                              </div>
-                              <span className="pd-loc-chip-cta">Map →</span>
+                              <MapPin size={14} />
+                              <span className="grow">{jobPing.address}</span>
+                              <span className="mono">
+                                {jobPing.lat.toFixed(4)}, {jobPing.lng.toFixed(4)}
+                              </span>
+                              <strong>Map</strong>
                             </button>
                           ) : null}
-                          <div className="pd-photo-grid sm">
-                            {(job.photos || []).map((p, i) => (
-                              <figure key={i} className="pd-photo">
-                                <img
-                                  src={typeof p === 'string' ? p : p.src}
-                                  alt={p.label || 'Photo'}
-                                />
-                                <figcaption>
-                                  <span>{p.label || `Photo ${i + 1}`}</span>
-                                  <span>checklist {job.checklist}</span>
-                                </figcaption>
-                              </figure>
-                            ))}
-                          </div>
-                        </div>
+
+                          {(job.photos || []).length ? (
+                            <div className="pd-jcard-photos">
+                              {(job.photos || []).map((p, i) => (
+                                <figure
+                                  key={i}
+                                  className="pd-jcard-shot"
+                                  data-tip={`${p.label || `Photo ${i + 1}`} · checklist ${job.checklist}`}
+                                >
+                                  <img
+                                    src={typeof p === 'string' ? p : p.src}
+                                    alt={p.label || 'Photo'}
+                                  />
+                                  <figcaption>
+                                    <span>{p.label || `Photo ${i + 1}`}</span>
+                                  </figcaption>
+                                </figure>
+                              ))}
+                            </div>
+                          ) : null}
+                        </article>
                       )
                     })}
                     {!selected.jobs?.length ? (
