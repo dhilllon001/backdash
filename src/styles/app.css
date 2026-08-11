@@ -9640,3 +9640,39 @@ tr.sub .t-lab { color: var(--text-2); }
     max-height: 420px;
   }
 }
+
+.rp-applied {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 140px;
+  margin-right: 4px;
+}
+.rp-applied b {
+  font-size: 13px;
+  font-weight: 650;
+  color: #12161C;
+}
+.rp-applied span {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #8B94A3;
+}
+.rp-none {
+  padding: 28px 16px;
+  text-align: center;
+  color: #8B94A3;
+  font-weight: 500;
+}
+.rp-day-alert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #FFF8F0;
+  color: #A85C06;
+  font-size: 12px;
+  font-weight: 500;
+}

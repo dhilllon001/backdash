@@ -265,7 +265,7 @@ export function SecurityReportingView() {
                 {applied.start} → {applied.end}
               </span>
             </div>
-            <label className="rp-inline-search">
+            <label className="rp-search">
               <Search size={14} />
               <input
                 value={query}
