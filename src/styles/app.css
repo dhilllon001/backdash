@@ -3057,6 +3057,68 @@ tr.sub .t-lab { color: var(--text-2); }
 }
 
 
+.cfg-topbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+.cfg-topbar .cfg-filter {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: none;
+}
+.cfg-unit-pills {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+  align-items: center;
+}
+.cfg-unit-pills button,
+.cfg-equip-pills button {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.cfg-unit-pills button:hover,
+.cfg-equip-pills button:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.cfg-unit-pills button.on,
+.cfg-equip-pills button.on {
+  background: var(--text);
+  border-color: var(--text);
+  color: #fff;
+}
+.cfg-add-btn {
+  flex: none;
+}
+.cfg-equip-pills {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px 10px;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+.cfg-toolbar { display: none !important; }
+.cfg-list .side-top,
+.cfg-list .side-tools-row,
+.cfg-list .side-tabs { display: none !important; }
+
 /* Shared left-panel tabs + rows (Style guide + Configuration) */
 .side-top {
   flex: none;

@@ -432,21 +432,21 @@ export function ConfigView() {
     setAddOpen(false)
   }
 
+  const pickEquipment = (next) => {
+    setEquipment(next)
+    const first = templates.find(
+      (t) => t.type === unitType && (next === 'all' || t.equipment === next),
+    )
+    if (first) setSelectedId(first.id)
+  }
+
   if (!selected) return null
 
   return (
     <section className="cfg">
-      <div className="cfg-toolbar">
-        <div className="cfg-toolbar-right" style={{ marginLeft: 'auto' }}>
-          <button type="button" className="btn btn-primary btn-sm" onClick={() => setAddOpen(true)}>
-            <Plus size={14} /> Add template
-          </button>
-        </div>
-      </div>
-
       <div className="cfg-shell">
         <aside className="cfg-list">
-          <div className="side-top">
+          <div className="cfg-topbar">
             <label className="cfg-filter">
               <Search size={14} />
               <input
@@ -456,7 +456,7 @@ export function ConfigView() {
                 aria-label="Filter templates"
               />
             </label>
-            <div className="side-tabs" role="tablist" aria-label="Unit type">
+            <div className="cfg-unit-pills" role="tablist" aria-label="Unit type">
               <button
                 type="button"
                 role="tab"
@@ -476,31 +476,33 @@ export function ConfigView() {
                 Truck
               </button>
             </div>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm cfg-add-btn"
+              onClick={() => setAddOpen(true)}
+            >
+              <Plus size={14} /> Add
+            </button>
           </div>
 
-          <div className="side-tools-row">
-            <select
-              className="cfg-equip-select"
-              value={equipment}
-              aria-label="Equipment type"
-              onChange={(e) => {
-                const next = e.target.value
-                setEquipment(next)
-                const first = templates.find(
-                  (t) =>
-                    t.type === unitType &&
-                    (next === 'all' || t.equipment === next),
-                )
-                if (first) setSelectedId(first.id)
-              }}
+          <div className="cfg-equip-pills" role="group" aria-label="Equipment">
+            <button
+              type="button"
+              className={equipment === 'all' ? 'on' : ''}
+              onClick={() => pickEquipment('all')}
             >
-              <option value="all">All equipment</option>
-              {equipOptions.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.label}
-                </option>
-              ))}
-            </select>
+              All
+            </button>
+            {equipOptions.map((e) => (
+              <button
+                key={e.id}
+                type="button"
+                className={equipment === e.id ? 'on' : ''}
+                onClick={() => pickEquipment(e.id)}
+              >
+                {e.label}
+              </button>
+            ))}
           </div>
 
           <div className="side-table-wrap">
