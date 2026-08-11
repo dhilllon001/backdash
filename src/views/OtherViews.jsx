@@ -446,39 +446,39 @@ export function ConfigView() {
 
       <div className="cfg-shell">
         <aside className="cfg-list">
-          <div className="side-tabs" role="tablist" aria-label="Unit type">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={unitType === 'trailer'}
-              className={unitType === 'trailer' ? 'on' : ''}
-              onClick={() => switchUnit('trailer')}
-            >
-              Trailer
-              <em>{templates.filter((t) => t.type === 'trailer').length}</em>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={unitType === 'truck'}
-              className={unitType === 'truck' ? 'on' : ''}
-              onClick={() => switchUnit('truck')}
-            >
-              Truck
-              <em>{templates.filter((t) => t.type === 'truck').length}</em>
-            </button>
-          </div>
-
-          <div className="cfg-list-tools">
+          <div className="side-top">
             <label className="cfg-filter">
               <Search size={14} />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Filter by company, code…"
+                placeholder="Filter templates…"
                 aria-label="Filter templates"
               />
             </label>
+            <div className="side-tabs" role="tablist" aria-label="Unit type">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={unitType === 'trailer'}
+                className={unitType === 'trailer' ? 'on' : ''}
+                onClick={() => switchUnit('trailer')}
+              >
+                Trailer
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={unitType === 'truck'}
+                className={unitType === 'truck' ? 'on' : ''}
+                onClick={() => switchUnit('truck')}
+              >
+                Truck
+              </button>
+            </div>
+          </div>
+
+          <div className="side-tools-row">
             <select
               className="cfg-equip-select"
               value={equipment}
@@ -507,9 +507,9 @@ export function ConfigView() {
             <table className="side-table">
               <thead>
                 <tr>
-                  <th>Company</th>
-                  <th>Equipment</th>
-                  <th>Code</th>
+                  <th className="col-name">Template</th>
+                  <th className="col-mid">Company</th>
+                  <th className="col-end">Code</th>
                 </tr>
               </thead>
               <tbody>
@@ -520,11 +520,9 @@ export function ConfigView() {
                     onClick={() => setSelectedId(t.id)}
                     aria-selected={selected?.id === t.id}
                   >
-                    <td className="side-name">{t.company}</td>
-                    <td className="side-meta">
-                      {equipmentLabel(t.type, t.equipment)} · {t.country}
-                    </td>
-                    <td className="side-code mono">{t.code}</td>
+                    <td className="side-name col-name">{t.name}</td>
+                    <td className="side-meta col-mid">{t.company}</td>
+                    <td className="side-code col-end mono">{t.code}</td>
                   </tr>
                 ))}
               </tbody>

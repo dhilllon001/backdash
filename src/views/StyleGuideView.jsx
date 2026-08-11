@@ -68,30 +68,7 @@ export function StyleGuideView() {
     <section className="sg">
       <div className="sg-shell">
         <aside className="sg-list">
-          <div className="side-tabs" role="tablist" aria-label="Unit type">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={kind === 'trailers'}
-              className={kind === 'trailers' ? 'on' : ''}
-              onClick={() => switchKind('trailers')}
-            >
-              Trailer
-              <em>{STYLE_GUIDE.trailers.length}</em>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={kind === 'trucks'}
-              className={kind === 'trucks' ? 'on' : ''}
-              onClick={() => switchKind('trucks')}
-            >
-              Truck
-              <em>{STYLE_GUIDE.trucks.length}</em>
-            </button>
-          </div>
-
-          <div className="sg-list-tools">
+          <div className="side-top">
             <label className="sg-filter">
               <Search size={14} />
               <input
@@ -101,6 +78,29 @@ export function StyleGuideView() {
                 aria-label="Filter companies"
               />
             </label>
+            <div className="side-tabs" role="tablist" aria-label="Unit type">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={kind === 'trailers'}
+                className={kind === 'trailers' ? 'on' : ''}
+                onClick={() => switchKind('trailers')}
+              >
+                Trailer
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={kind === 'trucks'}
+                className={kind === 'trucks' ? 'on' : ''}
+                onClick={() => switchKind('trucks')}
+              >
+                Truck
+              </button>
+            </div>
+          </div>
+
+          <div className="side-tools-row">
             <select
               className="sg-equip-select"
               value={equipment}
@@ -119,9 +119,9 @@ export function StyleGuideView() {
             <table className="side-table">
               <thead>
                 <tr>
-                  <th>Company</th>
-                  <th>Type</th>
-                  <th>Status</th>
+                  <th className="col-name">Company</th>
+                  <th className="col-mid">Type</th>
+                  <th className="col-end">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -137,9 +137,9 @@ export function StyleGuideView() {
                       onClick={() => selectDivision(d.id)}
                       aria-selected={selected?.id === d.id}
                     >
-                      <td className="side-name">{d.company || d.name}</td>
-                      <td className="side-meta">{equipLabel || d.region}</td>
-                      <td className={`side-status${ready ? ' ok' : ''}`}>
+                      <td className="side-name col-name">{d.company || d.name}</td>
+                      <td className="side-meta col-mid">{equipLabel || d.region}</td>
+                      <td className={`side-status col-end${ready ? ' ok' : ''}`}>
                         {ready ? 'Ready' : 'Sync'}
                       </td>
                     </tr>
