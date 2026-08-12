@@ -22,12 +22,23 @@ import { useActivity } from './context/ActivityContext.jsx'
 import { EMPLOYEES, EXCEPTIONS } from './data/mock.js'
 import { SECURITY_PEOPLE, getSecurityPerson, getSecurityShifts } from './data/security.js'
 import { getWorkspace } from './data/workspaces.js'
+import { buildPath, pageTitle, parsePath } from './routing.js'
+
+function applyRoute(route, setters) {
+  const { setWorkspaceId, setView, setPersonId, setExcOpen, setSearch } = setters
+  setWorkspaceId(route.workspaceId)
+  setView(route.view)
+  setPersonId(route.personId)
+  setExcOpen(false)
+  if (!route.workspaceId) setSearch('')
+}
 
 export default function App() {
   const { logActivity } = useActivity()
-  const [workspaceId, setWorkspaceId] = useState(null) // null = home
-  const [view, setView] = useState('payroll')
-  const [personId, setPersonId] = useState(null)
+  const initialRoute = parsePath()
+  const [workspaceId, setWorkspaceId] = useState(initialRoute.workspaceId)
+  const [view, setView] = useState(initialRoute.view)
+  const [personId, setPersonId] = useState(initialRoute.personId)
   const [collapsed, setCollapsed] = useState(false)
   const [location, setLocation] = useState('Brampton')
   const [search, setSearch] = useState('')
@@ -43,6 +54,8 @@ export default function App() {
   const workspace = getWorkspace(workspaceId)
   const isDecals = workspaceId === 'decals'
   const isSecurity = workspaceId === 'security'
+  const routeSetters = { setWorkspaceId, setView, setPersonId, setExcOpen, setSearch }
+
   const onHome = () => {
     setWorkspaceId(null)
     setPersonId(null)
@@ -68,6 +81,27 @@ export default function App() {
       detail: 'Switched workspace from home',
     })
   }
+
+  // Keep the address bar in sync with the open workspace / page
+  useEffect(() => {
+    const next = buildPath({ workspaceId, view, personId })
+    if (window.location.pathname !== next) {
+      window.history.pushState(null, '', next)
+    }
+    const personName =
+      (isSecurity
+        ? securityPeople.find((e) => e.id === personId)
+        : employees.find((e) => e.id === personId)
+      )?.name || getSecurityPerson(personId)?.name
+    document.title = pageTitle({ workspaceId, view, personName })
+  }, [workspaceId, view, personId, isSecurity, securityPeople, employees])
+
+  useEffect(() => {
+    const onPop = () => applyRoute(parsePath(), routeSetters)
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setters are stable
+  }, [])
 
   useEffect(() => {
     const onKey = (e) => {
@@ -295,6 +329,7 @@ export default function App() {
           }
           onProofTimesheet={openProofTimesheet}
           onShare={sharePersonTimesheet}
+          compactActions={isSecurity}
           onBack={() => navigate('payroll')}
           personName={emp?.name}
           personLabel={emp?.role?.match(/(EMP|SEC)-\d+/)?.[0] || emp?.id}
