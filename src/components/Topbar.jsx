@@ -29,6 +29,7 @@ export function Topbar({
   onResolvePunch,
   onProofTimesheet,
   onShare,
+  compactActions = false,
 }) {
   const isPerson = mode === 'person'
 
@@ -59,18 +60,22 @@ export function Topbar({
                 <i className="dot" /> Resolve punch
               </button>
             ) : null}
-            <button type="button" className="btn btn-sm" onClick={onProofTimesheet}>
-              <FileCheck2 size={13} strokeWidth={2.2} />
-              Proof timesheet
-            </button>
-            <button type="button" className="btn btn-sm" onClick={onShare}>
-              <Share2 size={13} strokeWidth={2.2} />
-              Share
-            </button>
-            <button type="button" className="btn btn-sm" onClick={onCreateJob}>
-              <Plus size={13} strokeWidth={2.4} />
-              Create job
-            </button>
+            {!compactActions ? (
+              <>
+                <button type="button" className="btn btn-sm" onClick={onProofTimesheet}>
+                  <FileCheck2 size={13} strokeWidth={2.2} />
+                  Proof timesheet
+                </button>
+                <button type="button" className="btn btn-sm" onClick={onShare}>
+                  <Share2 size={13} strokeWidth={2.2} />
+                  Share
+                </button>
+                <button type="button" className="btn btn-sm" onClick={onCreateJob}>
+                  <Plus size={13} strokeWidth={2.4} />
+                  Create job
+                </button>
+              </>
+            ) : null}
             <button
               type="button"
               className="btn btn-sm btn-primary"

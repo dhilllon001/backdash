@@ -7,7 +7,6 @@ const TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'punches', label: 'Punches' },
   { id: 'location', label: 'Location' },
-  { id: 'paycodes', label: 'Pay codes' },
 ]
 
 export function SecurityPersonDetail({ personId, employee, onResolvePunch }) {
@@ -166,29 +165,6 @@ export function SecurityPersonDetail({ personId, employee, onResolvePunch }) {
               <div className="sec-loc-placeholder">
                 <MapPin size={28} strokeWidth={1.5} />
                 <span>Yard map · {emp.yards[0]}</span>
-              </div>
-            </div>
-          )}
-
-          {tab === 'paycodes' && (
-            <div className="sec-detail-paycodes">
-              <div className="sec-pay-grid">
-                <div className="sec-pay-cell">
-                  <span>Regular</span>
-                  <b className="num">{emp.reg}</b>
-                </div>
-                <div className="sec-pay-cell">
-                  <span>Overtime</span>
-                  <b className="num">{emp.ot || '—'}</b>
-                </div>
-                <div className="sec-pay-cell">
-                  <span>Payable total</span>
-                  <b className="num">{emp.payable}</b>
-                </div>
-                <div className="sec-pay-cell">
-                  <span>Tasks completed</span>
-                  <b className="num">{emp.jobs}</b>
-                </div>
               </div>
             </div>
           )}

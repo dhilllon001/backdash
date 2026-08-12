@@ -127,15 +127,16 @@ function buildActivity(shift, opts = {}) {
     }
   }
   if (shift.open) {
+    // Timeline note only — resolve CTA lives in the single hero alert above
     events.push({
       id: 'missing',
       time: shift.exception?.time || '15:56',
       tone: 'warn',
-      title: 'Punch-out missing',
+      title: 'Gate exit detected',
       detail:
         shift.exception?.text ||
-        'No clock-out recorded · Unbooked time stays open until resolved',
-      alert: true,
+        'No matching punch-out · resolve from the alert above',
+      alert: false,
     })
   } else if (shift.out) {
     events.push({
@@ -660,7 +661,6 @@ export function PersonDetailView({
                     ['jobs', isSecurity ? 'Tasks' : 'Jobs'],
                     ['shift', 'Punches'],
                     ['location', 'Location'],
-                    ['pay', 'Pay codes'],
                   ].map(([id, label]) => (
                     <button
                       key={id}
@@ -678,63 +678,16 @@ export function PersonDetailView({
 
                 {tab === 'overview' ? (
                   <div className="pd-overview-stack">
-                    {(selected.open ||
-                      (selected.jobs || []).some((j) => !j.end) ||
-                      activity.some((ev) => ev.alert)) && (
+                    {/* Hero miss-list already covers punch-out / open jobs — bar is for other alerts only */}
+                    {activity.some((ev) => ev.alert) ? (
                       <div className="pd-alert-bar">
                         <AlertTriangle size={15} />
                         <div className="pd-alert-copy">
-                          <b>
-                            {selected.open
-                              ? 'Punch-out missing'
-                              : (selected.jobs || []).some((j) => !j.end)
-                                ? isSecurity
-                                  ? 'Open checkpoint on this shift'
-                                  : 'Open job on this shift'
-                                : 'Review needed'}
-                          </b>
-                          <span>
-                            {[
-                              selected.open ? 'No clock-out recorded' : null,
-                              (selected.jobs || []).some((j) => !j.end)
-                                ? isSecurity
-                                  ? 'At least one checkpoint is still open'
-                                  : 'At least one job is still in progress'
-                                : null,
-                              !photos.length
-                                ? isSecurity
-                                  ? 'Inspection photos incomplete'
-                                  : 'No photos uploaded yet'
-                                : null,
-                            ]
-                              .filter(Boolean)
-                              .join(' · ')}
-                          </span>
+                          <b>{activity.find((ev) => ev.alert)?.title || 'Review needed'}</b>
+                          <span>{activity.find((ev) => ev.alert)?.detail || ''}</span>
                         </div>
-                        {selected.open ? (
-                          <div className="pd-warn-actions">
-                            <button
-                              type="button"
-                              className="btn btn-sm"
-                              onClick={() => setEditing(true)}
-                            >
-                              Add time
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-primary"
-                              onClick={() =>
-                                onResolvePunch
-                                  ? onResolvePunch()
-                                  : savePunch({ in: selected.in, out: '15:56' })
-                              }
-                            >
-                              Use {formatClock(selected.exception?.time || '15:56')}
-                            </button>
-                          </div>
-                        ) : null}
                       </div>
-                    )}
+                    ) : null}
 
                     <div className="pd-overview-grid">
                       <div className="pd-overview-main">
@@ -1064,50 +1017,6 @@ export function PersonDetailView({
                         activeId={activePing}
                         onSelect={setActivePing}
                       />
-                    </div>
-                  </div>
-                ) : null}
-
-                {tab === 'pay' ? (
-                  <div className="pd-pay-panel">
-                    <div className="pay-tbl">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Pay code</th>
-                            <th className="num">Hours</th>
-                            <th>Note</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>
-                              <span className="code">REG</span> Regular
-                            </td>
-                            <td className="num">{emp.reg}</td>
-                            <td>Standard shift hours</td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <span className="code">OT1</span> Overtime
-                            </td>
-                            <td className="num">{emp.ot || '0:00'}</td>
-                            <td>{emp.ot ? 'Pending OT approval' : 'None this period'}</td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <span className="code">BRK</span> Unpaid break
-                            </td>
-                            <td className="num">(2:00)</td>
-                            <td>Auto meal deductions</td>
-                          </tr>
-                          <tr className="tot">
-                            <td>Payable total</td>
-                            <td className="num">{emp.payable}</td>
-                            <td>Hours only · no dollar amounts</td>
-                          </tr>
-                        </tbody>
-                      </table>
                     </div>
                   </div>
                 ) : null}

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { ChevronRight, AlertTriangle, Search, Info } from 'lucide-react'
-import { SECURITY_PEOPLE, SEC_REPORT_SHIFTS } from '../../data/security.js'
+import { ChevronRight, AlertTriangle, Search, Info, MapPin } from 'lucide-react'
+import { SECURITY_PEOPLE, SEC_REPORT_SHIFTS, SEC_YARDS } from '../../data/security.js'
 
 const W0 = 6 * 60
 const W1 = 18 * 60
@@ -8,6 +8,7 @@ const WD = W1 - W0
 
 const DEFAULT_FILTERS = {
   personId: 'all',
+  location: 'all',
   start: '2026-07-07',
   end: '2026-07-20',
 }
@@ -46,6 +47,7 @@ function empMeta(personId) {
       color: '#2B4FD3',
       bg: '#EEF1FD',
       empId: personId,
+      yards: [],
     }
   }
   return {
@@ -55,6 +57,7 @@ function empMeta(personId) {
     color: emp.color,
     bg: emp.bg,
     empId: emp.role?.match(/SEC-\d+/)?.[0] || emp.id,
+    yards: emp.yards || [],
   }
 }
 
@@ -76,6 +79,7 @@ function enrichShift(row) {
   }))
   return {
     ...row,
+    yard: row.yard || meta.yards[0] || '—',
     meta,
     hoursMin,
     prodMin,
@@ -91,6 +95,7 @@ export function SecurityReportingView() {
   const [applied, setApplied] = useState(null)
   const [editing, setEditing] = useState(false)
   const [query, setQuery] = useState('')
+  const [groupBy, setGroupBy] = useState('person')
   const [openDays, setOpenDays] = useState(() => new Set())
   const [openGroups, setOpenGroups] = useState(() => new Set())
   const [tip, setTip] = useState(null)
@@ -108,11 +113,13 @@ export function SecurityReportingView() {
     if (!applied) return []
     return SEC_REPORT_SHIFTS.filter((r) => {
       if (applied.personId !== 'all' && r.personId !== applied.personId) return false
+      if (applied.location !== 'all' && r.yard !== applied.location) return false
       if (r.date < applied.start || r.date > applied.end) return false
       const q = query.trim().toLowerCase()
       if (!q) return true
       const meta = empMeta(r.personId)
-      const hay = `${meta.name} ${r.dateLabel} ${r.jobs.map((j) => `${j.id} ${j.title}`).join(' ')}`.toLowerCase()
+      const hay =
+        `${meta.name} ${r.yard || ''} ${r.dateLabel} ${r.jobs.map((j) => `${j.id} ${j.title}`).join(' ')}`.toLowerCase()
       return hay.includes(q)
     }).map(enrichShift)
   }, [applied, query])
@@ -120,21 +127,28 @@ export function SecurityReportingView() {
   const groups = useMemo(() => {
     const map = new Map()
     rows.forEach((day) => {
-      const key = day.personId
+      const key = groupBy === 'location' ? day.yard : day.personId
       if (!map.has(key)) {
         map.set(key, {
           key,
           meta: day.meta,
-          title: day.meta.name,
+          yard: day.yard,
+          title: groupBy === 'location' ? day.yard : day.meta.name,
+          subtitle:
+            groupBy === 'location'
+              ? 'Location'
+              : `${day.meta.empId} · ${day.meta.yards.join(', ') || day.yard}`,
           days: [],
           hoursMin: 0,
           prodMin: 0,
           jobs: 0,
           alerts: 0,
+          people: new Set(),
         })
       }
       const g = map.get(key)
       g.days.push(day)
+      g.people.add(day.personId)
       g.hoursMin += day.hoursMin || 0
       g.prodMin += day.prodMin || 0
       g.jobs += day.jobs.length
@@ -145,8 +159,9 @@ export function SecurityReportingView() {
       hours: formatMinutes(g.hoursMin),
       productive: formatMinutes(g.prodMin),
       shifts: g.days.length,
+      peopleCount: g.people.size,
     }))
-  }, [rows])
+  }, [rows, groupBy])
 
   const totals = useMemo(() => {
     const h = rows.reduce((n, d) => n + (d.hoursMin || 0), 0)
@@ -159,9 +174,9 @@ export function SecurityReportingView() {
       j,
       flagged,
       util: h ? Math.round((p / h) * 1000) / 10 : 0,
-      people: groups.length,
+      people: new Set(rows.map((r) => r.personId)).size,
     }
-  }, [rows, groups.length])
+  }, [rows])
 
   const toggleGroup = (key) => {
     setOpenGroups((prev) => {
@@ -181,13 +196,17 @@ export function SecurityReportingView() {
     })
   }
 
+  const appliedPersonLabel =
+    applied?.personId === 'all' ? 'All guards' : empMeta(applied.personId).name
+  const appliedLocLabel = applied?.location === 'all' ? 'All locations' : applied?.location
+
   return (
-    <section className={`rp${showSearch ? ' searching' : ''}`}>
+    <section className={`rp srep${showSearch ? ' searching' : ''}`}>
       {showSearch ? (
         <div className="rp-empty">
           <div className="rp-empty-card">
             <h1>Reporting</h1>
-            <p>Search by guard and date range to load security shift timelines.</p>
+            <p>Search by person, location, and date range to load security shift timelines.</p>
             <form
               className="rp-form"
               onSubmit={(e) => {
@@ -205,6 +224,20 @@ export function SecurityReportingView() {
                   {SECURITY_PEOPLE.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="rp-field">
+                <span>Location</span>
+                <select
+                  value={draft.location}
+                  onChange={(e) => setDraft((f) => ({ ...f, location: e.target.value }))}
+                >
+                  <option value="all">All locations</option>
+                  {SEC_YARDS.map((y) => (
+                    <option key={y.id} value={y.name}>
+                      {y.name}
                     </option>
                   ))}
                 </select>
@@ -254,23 +287,57 @@ export function SecurityReportingView() {
         </div>
       ) : (
         <div className="rp-wrap rp-full">
-          <div className="rp-toolbar">
-            <div className="rp-applied">
-              <b>
-                {applied.personId === 'all'
-                  ? 'All guards'
-                  : empMeta(applied.personId).name}
-              </b>
-              <span>
-                {applied.start} → {applied.end}
-              </span>
+          <div className="rp-toolbar srep-toolbar">
+            <div className="srep-applied">
+              <div className="srep-applied-person">
+                {applied.personId !== 'all' ? (
+                  <span
+                    className="pav"
+                    style={{
+                      background: empMeta(applied.personId).bg,
+                      color: empMeta(applied.personId).color,
+                    }}
+                  >
+                    {empMeta(applied.personId).initials}
+                  </span>
+                ) : null}
+                <div>
+                  <b>{appliedPersonLabel}</b>
+                  <span>
+                    <MapPin size={12} strokeWidth={2.2} /> {appliedLocLabel} · {applied.start} →{' '}
+                    {applied.end}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="srep-tabs" role="tablist" aria-label="Group by">
+              <button
+                type="button"
+                className={groupBy === 'person' ? 'on' : ''}
+                onClick={() => {
+                  setGroupBy('person')
+                  setOpenGroups(new Set())
+                }}
+              >
+                By person
+              </button>
+              <button
+                type="button"
+                className={groupBy === 'location' ? 'on' : ''}
+                onClick={() => {
+                  setGroupBy('location')
+                  setOpenGroups(new Set())
+                }}
+              >
+                By location
+              </button>
             </div>
             <label className="rp-search">
               <Search size={14} />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Filter tasks, people…"
+                placeholder="Filter people, tasks…"
               />
             </label>
             <button type="button" className="rp-btn" onClick={() => setEditing(true)}>
@@ -336,16 +403,24 @@ export function SecurityReportingView() {
                       onClick={() => toggleGroup(g.key)}
                     >
                       <ChevronRight size={14} className="rp-caret" />
-                      <span
-                        className="pav"
-                        style={{ background: g.meta.bg, color: g.meta.color }}
-                      >
-                        {g.meta.initials}
-                      </span>
+                      {groupBy === 'person' ? (
+                        <span
+                          className="pav"
+                          style={{ background: g.meta.bg, color: g.meta.color }}
+                        >
+                          {g.meta.initials}
+                        </span>
+                      ) : (
+                        <span className="srep-loc-av">
+                          <MapPin size={14} strokeWidth={2.2} />
+                        </span>
+                      )}
                       <div className="rp-person-meta">
                         <b>{g.title}</b>
                         <span>
-                          {g.meta.empId} · {g.shifts} shifts · {g.jobs} tasks
+                          {groupBy === 'location'
+                            ? `${g.peopleCount} guards · ${g.shifts} shifts · ${g.jobs} tasks`
+                            : g.subtitle}
                         </span>
                       </div>
                       <span className="rp-person-hrs num">{g.hours}</span>
@@ -366,7 +441,17 @@ export function SecurityReportingView() {
                                 className="rp-day-head"
                                 onClick={() => toggleDay(day.id)}
                               >
-                                <span className="rp-day-label">{day.dateLabel}</span>
+                                <span className="rp-day-label">
+                                  {groupBy === 'location' ? (
+                                    <>
+                                      <b>{day.meta.name}</b>
+                                      <span className="muted"> · {day.dateLabel}</span>
+                                    </>
+                                  ) : (
+                                    day.dateLabel
+                                  )}
+                                </span>
+                                <span className="srep-day-yard muted">{day.yard}</span>
                                 <span className="num">
                                   {day.shiftStart} → {day.shiftEnd}
                                 </span>

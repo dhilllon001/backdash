@@ -246,12 +246,13 @@ export const SECURITY_PEOPLE = [
 ]
 
 const PH = {
-  plate: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=640&h=420&fit=crop',
-  id: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=480&h=320&fit=crop',
-  badge: 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=480&h=320&fit=crop',
-  gate: 'https://images.unsplash.com/photo-1578575437130-595fccf4d4e1?w=640&h=420&fit=crop',
-  truck: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=640&h=420&fit=crop',
-  dock: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=640&h=420&fit=crop',
+  plate: '/security/sec-truck-plate.jpg',
+  id: '/security/sec-visitor-gate.jpg',
+  badge: '/security/sec-visitor-vehicle.jpg',
+  gate: '/security/sec-gate-check.jpg',
+  truck: '/security/sec-yard-trailers.jpg',
+  dock: '/security/sec-yard-trailers.jpg',
+  fence: '/security/sec-fence-damage.jpg',
 }
 
 export const VISITORS = [
@@ -273,8 +274,8 @@ export const VISITORS = [
     ],
     photos: [
       { label: 'Front plate', src: PH.plate, time: '08:18' },
-      { label: 'Driver ID', src: PH.id, time: '08:16' },
-      { label: 'Visitor badge', src: PH.badge, time: '08:17' },
+      { label: 'Gate booth', src: PH.id, time: '08:16' },
+      { label: 'Vehicle', src: PH.badge, time: '08:17' },
       { label: 'Gate entry', src: PH.gate, time: '08:14' },
     ],
   },
@@ -500,14 +501,14 @@ export const SEC_YARD_SHIFT_TASKS = {
 
 /** Person shift ledger for detail view — mirrors Decals PERSON_SHIFTS shape (Jul 7–20 2026). */
 const SEC_SHIFT_PH = {
-  gate: 'https://images.unsplash.com/photo-1578575437130-595fccf4d4e1?w=640&h=420&fit=crop',
-  fence: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=640&h=420&fit=crop',
-  camera: 'https://images.unsplash.com/photo-1494412574643-ff11b5a2ec63?w=640&h=420&fit=crop',
-  badge: 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=480&h=320&fit=crop',
-  damage: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=640&h=420&fit=crop',
-  trailer: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=640&h=420&fit=crop',
-  truck: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=640&h=420&fit=crop',
-  yard: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=640&h=420&fit=crop',
+  gate: '/security/sec-gate-check.jpg',
+  fence: '/security/sec-fence-damage.jpg',
+  camera: '/security/sec-yard-trailers.jpg',
+  badge: '/security/sec-visitor-gate.jpg',
+  damage: '/security/sec-fence-damage.jpg',
+  trailer: '/security/sec-yard-trailers.jpg',
+  truck: '/security/sec-truck-plate.jpg',
+  yard: '/security/sec-yard-trailers.jpg',
 }
 
 function secJob(id, title, unit, start, end, opts = {}) {
@@ -1457,6 +1458,7 @@ export const SEC_REPORT_SHIFTS = [
   {
     id: 'sr-s1-0720',
     personId: 's1',
+    yard: 'Brampton',
     date: '2026-07-20',
     dateLabel: 'Mon, Jul 20',
     shiftStart: '06:02',
@@ -1503,6 +1505,7 @@ export const SEC_REPORT_SHIFTS = [
   {
     id: 'sr-s2-0720',
     personId: 's2',
+    yard: 'Toronto',
     date: '2026-07-20',
     dateLabel: 'Mon, Jul 20',
     shiftStart: '06:00',
@@ -1549,6 +1552,7 @@ export const SEC_REPORT_SHIFTS = [
   {
     id: 'sr-s3-0719',
     personId: 's3',
+    yard: 'Brampton',
     date: '2026-07-19',
     dateLabel: 'Sun, Jul 19',
     shiftStart: '14:00',
@@ -1595,6 +1599,7 @@ export const SEC_REPORT_SHIFTS = [
   {
     id: 'sr-s4-0719',
     personId: 's4',
+    yard: 'Dallas',
     date: '2026-07-19',
     dateLabel: 'Sun, Jul 19',
     shiftStart: '06:00',
