@@ -57,3 +57,16 @@ export function formatClock(t) {
   const h12 = hh % 12 || 12
   return `${h12}:${String(mm).padStart(2, '0')} ${period}`
 }
+
+/** Stable display Shift ID (9-digit ops style). Uses shiftCode when present. */
+export function formatShiftId(shift, empId = '') {
+  if (!shift || shift.dayOff) return null
+  if (shift.shiftCode) return String(shift.shiftCode)
+  const raw = `${empId}|${shift.id || ''}|${shift.date || ''}`
+  let h = 2166136261
+  for (let i = 0; i < raw.length; i++) {
+    h ^= raw.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return String(210000000 + ((h >>> 0) % 89000000))
+}

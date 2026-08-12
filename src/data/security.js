@@ -575,8 +575,16 @@ function secShift({
   segs,
   jobs,
   exception,
+  shiftCode,
 }) {
   const short = String(parseInt(date.slice(-2), 10))
+  const code =
+    shiftCode ||
+    String(
+      220000000 +
+        (Math.abs([...`${id}${date}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7)) %
+          79000000),
+    )
   return {
     id,
     day,
@@ -597,6 +605,7 @@ function secShift({
     jobCount: jobCount ?? jobs.length,
     segs,
     jobs,
+    shiftCode: code,
     ...(exception ? { exception } : {}),
   }
 }

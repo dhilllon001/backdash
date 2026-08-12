@@ -13,7 +13,7 @@ import {
   Check,
 } from 'lucide-react'
 import { buildShiftLedger, getPersonShifts } from '../data/mock.js'
-import { formatClock } from './ui.jsx'
+import { formatClock, formatShiftId } from './ui.jsx'
 
 function calcHours(date, time, punchInHint) {
   if (!date || !time) return '—'
@@ -436,6 +436,7 @@ export function ProofTimesheetModal({ employee, onClose, onShare, loadShifts }) 
             <table className="proof-table">
               <thead>
                 <tr>
+                  <th>Shift ID</th>
                   <th>Day</th>
                   <th>Clock</th>
                   <th className="num">Hours</th>
@@ -446,6 +447,7 @@ export function ProofTimesheetModal({ employee, onClose, onShare, loadShifts }) 
               <tbody>
                 {ledger.map((s) => (
                   <tr key={s.id} className={s.dayOff ? 'off' : s.open ? 'open' : ''}>
+                    <td className="mono">{formatShiftId(s, employee.id) || '—'}</td>
                     <td>{s.day}</td>
                     <td className="mono">
                       {s.dayOff

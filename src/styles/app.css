@@ -1816,26 +1816,91 @@ tr.sub .t-lab { color: var(--text-2); }
   display: flex;
   flex-direction: column;
 }
+.pd.dash3 .pd-list-cols {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 10px;
+  padding: 2px 10px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
 .pd.dash3 .pd-shift-card {
   position: relative;
-  display: block;
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 10px;
   width: 100%;
   text-align: left;
   border: 1px solid var(--border);
   background: #fff;
   border-radius: 10px;
-  padding: 11px 12px 10px;
+  padding: 10px 12px;
   cursor: pointer;
   font: inherit;
   color: inherit;
   box-shadow: none;
+  align-items: start;
 }
 .pd.dash3 .pd-shift-card:hover { border-color: var(--border-strong); }
 .pd.dash3 .pd-shift-card.on {
-  background: var(--accent-soft);
-  border-color: var(--accent-border);
-  box-shadow: inset 3px 0 0 var(--accent);
-  color: inherit;
+  background: #1B2437 !important;
+  border-color: #1B2437 !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+.pd.dash3 .pd-shift-card.on .pd-shift-id-label { color: rgba(255,255,255,0.45) !important; }
+.pd.dash3 .pd-shift-card.on .pd-shift-id-val { color: #fff !important; }
+.pd.dash3 .pd-shift-card.on .pd-shift-day,
+.pd.dash3 .pd-shift-card.on .pd-shift-title,
+.pd.dash3 .pd-shift-card.on .pd-shift-range,
+.pd.dash3 .pd-shift-card.on .pd-shift-dur { color: #fff !important; }
+.pd.dash3 .pd-shift-card.on .pd-shift-loc { color: rgba(255,255,255,0.62) !important; }
+.pd.dash3 .pd-shift-card.on .pd-mini-tag {
+  background: rgba(255,255,255,0.12) !important;
+  color: rgba(255,255,255,0.88) !important;
+}
+.pd.dash3 .pd-shift-card.on .pd-mini-tag.ok {
+  background: rgba(31,122,67,0.28) !important;
+  color: #9ee0b5 !important;
+}
+.pd.dash3 .pd-shift-card.on .pd-mini-tag.warn {
+  background: rgba(208,138,60,0.28) !important;
+  color: #f0c27a !important;
+}
+.pd.dash3 .pd-shift-card.on .pd-mini-rail { background: rgba(255,255,255,0.16) !important; }
+.pd.dash3 .pd-shift-card.on .pd-mini-rail i.work,
+.pd.dash3 .pd-shift-card.on .pd-mini-rail i.job { background: #7B8FE8 !important; }
+.pd.dash3 .pd-shift-card.on .pd-mini-rail i.openp,
+.pd.dash3 .pd-shift-card.on .pd-mini-rail i.brk { background: #D08A3C !important; }
+.pd.dash3 .pd-shift-idcol {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 1px;
+}
+.pd.dash3 .pd-shift-id-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1.2;
+}
+.pd.dash3 .pd-shift-id-val {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
+}
+.pd.dash3 .pd-shift-maincol {
+  min-width: 0;
 }
 .pd.dash3 .pd-shift-card .pd-shift-stripe,
 .pd.dash3 .pd-shift-card .pd-shift-inner,
@@ -1959,11 +2024,30 @@ tr.sub .t-lab { color: var(--text-2); }
   border-bottom: none;
 }
 .pd.dash3 .pd-hero-id {
-  font-size: 11.5px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-3);
   letter-spacing: 0;
   text-transform: none;
+}
+.pd.dash3 .pd-hero-day { color: var(--text-2); font-weight: 600; }
+.pd.dash3 .pd-hero-sep { color: var(--text-3); opacity: 0.7; }
+.pd.dash3 .pd-hero-shift {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  color: var(--text-2);
+}
+.pd.dash3 .pd-hero-shift b {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
 }
 .pd.dash3 .pd-hero h2 {
   margin: 4px 0 6px;
@@ -7688,6 +7772,9 @@ tr.sub .t-lab { color: var(--text-2); }
   background: #fff !important;
 }
 .pd.dash3 .pd-hero-id { color: #8B94A3 !important; }
+.pd.dash3 .pd-hero-day { color: #5A6472 !important; }
+.pd.dash3 .pd-hero-shift { color: #5A6472 !important; }
+.pd.dash3 .pd-hero-shift b { color: #12161C !important; }
 .pd.dash3 .pd-hero h2 { color: #12161C !important; }
 .pd.dash3 .pd-hero-unit { color: #5A6472 !important; }
 .pd.dash3 .pd-hero-loc { color: #8B94A3 !important; }
@@ -7740,6 +7827,8 @@ tr.sub .t-lab { color: var(--text-2); }
   box-shadow: none !important;
   color: #fff !important;
 }
+.pd.dash3 .pd-shift-card.on .pd-shift-id-label { color: rgba(255,255,255,0.42) !important; }
+.pd.dash3 .pd-shift-card.on .pd-shift-id-val { color: #fff !important; }
 .pd.dash3 .pd-shift-card.on .pd-shift-day,
 .pd.dash3 .pd-shift-card.on .pd-shift-title,
 .pd.dash3 .pd-shift-card.on .pd-shift-range,

@@ -9,7 +9,7 @@ import {
   Camera,
   Search,
 } from 'lucide-react'
-import { Chip, formatClock } from '../components/ui.jsx'
+import { Chip, formatClock, formatShiftId } from '../components/ui.jsx'
 import { LocationMap } from '../components/LocationMap.jsx'
 import { buildLocationPings, clockInLocation } from '../data/locations.js'
 import { getEmployee, getPersonShifts, buildShiftLedger } from '../data/mock.js'
@@ -437,6 +437,10 @@ export function PersonDetailView({
           </div>
 
           <div className="pd-list-body">
+            <div className="pd-list-cols" aria-hidden>
+              <span>Shift ID</span>
+              <span>Shift</span>
+            </div>
             {visibleLedger.map((s) => {
               const job = s.jobs?.[0]
               const extra = Math.max((s.jobs?.length || 0) - 1, 0)
@@ -459,6 +463,7 @@ export function PersonDetailView({
                 : s.barTone === 'ot'
                   ? 'Medium priority'
                   : 'Normal priority'
+              const shiftId = formatShiftId(s, emp.id)
 
               return (
                 <button
@@ -469,38 +474,43 @@ export function PersonDetailView({
                   data-tip={
                     s.dayOff
                       ? `${s.day} · Day off`
-                      : `${s.day} · ${formatClock(s.in)} → ${s.open ? 'open' : formatClock(s.out)} · ${s.totalHours || s.hoursLabel}`
+                      : `Shift ${shiftId} · ${s.day} · ${formatClock(s.in)} → ${s.open ? 'open' : formatClock(s.out)} · ${s.totalHours || s.hoursLabel}`
                   }
                 >
-                  <div className="pd-shift-top">
-                    <span className="pd-shift-day">{s.day}</span>
-                    <span className={`pd-mini-tag ${statusTone}`}>
-                      {s.open ? <i className="pd-pulse" /> : null}
-                      {statusLabel}
-                    </span>
+                  <div className="pd-shift-idcol">
+                    <span className="pd-shift-id-val mono">{shiftId || '—'}</span>
                   </div>
-
-                  <div className="pd-shift-title">
-                    {s.dayOff
-                      ? 'No work recorded'
-                      : job
-                        ? `${job.title}${extra ? ` +${extra}` : ''}`
-                        : `${s.jobCount} jobs`}
-                  </div>
-                  <div className="pd-shift-loc">
-                    {s.dayOff ? 'Scheduled day off' : `${s.yard} · ${priority}`}
-                  </div>
-
-                  {!s.dayOff ? (
-                    <div className="pd-shift-barrow plain">
-                      <span className="pd-shift-range num">
-                        {formatClock(s.in)} → {s.open ? 'open' : formatClock(s.out)}
-                      </span>
-                      <span className="pd-shift-dur num">
-                        {s.open ? s.productiveHours || s.onJobs : s.totalHours || s.hoursLabel}
+                  <div className="pd-shift-maincol">
+                    <div className="pd-shift-top">
+                      <span className="pd-shift-day">{s.day}</span>
+                      <span className={`pd-mini-tag ${statusTone}`}>
+                        {s.open ? <i className="pd-pulse" /> : null}
+                        {statusLabel}
                       </span>
                     </div>
-                  ) : null}
+
+                    <div className="pd-shift-title">
+                      {s.dayOff
+                        ? 'No work recorded'
+                        : job
+                          ? `${job.title}${extra ? ` +${extra}` : ''}`
+                          : `${s.jobCount} jobs`}
+                    </div>
+                    <div className="pd-shift-loc">
+                      {s.dayOff ? 'Scheduled day off' : `${s.yard} · ${priority}`}
+                    </div>
+
+                    {!s.dayOff ? (
+                      <div className="pd-shift-barrow plain">
+                        <span className="pd-shift-range num">
+                          {formatClock(s.in)} → {s.open ? 'open' : formatClock(s.out)}
+                        </span>
+                        <span className="pd-shift-dur num">
+                          {s.open ? s.productiveHours || s.onJobs : s.totalHours || s.hoursLabel}
+                        </span>
+                      </div>
+                    ) : null}
+                  </div>
                 </button>
               )
             })}
@@ -526,7 +536,14 @@ export function PersonDetailView({
                   <div className="pd-hero-top">
                     <div className="pd-hero-title">
                       <span className="pd-hero-id">
-                        {selected.day} · Shift {(selected.date || '').replace(/-/g, '')}
+                        <span className="pd-hero-day">{selected.day}</span>
+                        <span className="pd-hero-sep" aria-hidden>
+                          ·
+                        </span>
+                        <span className="pd-hero-shift">
+                          Shift{' '}
+                          <b className="mono">{formatShiftId(selected, emp.id)}</b>
+                        </span>
                       </span>
                       <h2>
                         {primaryJob ? primaryJob.title : 'Shift detail'}
@@ -934,7 +951,10 @@ export function PersonDetailView({
                   <div className="pd-shift-panel">
                     <div className="pd-sec-title row">
                       <span>
-                        <Clock3 size={13} /> Timeline · {selected.yard} · {selected.tz}
+                        <Clock3 size={13} /> Shift{' '}
+                        <b className="mono">{formatShiftId(selected, emp.id)}</b>
+                        {' · '}
+                        {selected.yard} · {selected.tz}
                       </span>
                       <button type="button" className="btn btn-sm" onClick={() => setEditing(true)}>
                         <Pencil size={12} /> Edit hours
